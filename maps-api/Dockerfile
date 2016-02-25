@@ -1,20 +1,32 @@
-FROM ubuntu:14.04
+FROM ubuntu:12.04
 MAINTAINER Ido Shamon
 
-ENV  DEBIAN_FRONTEND noninteractive
+ENV DEBIAN_FRONTEND noninteractive
 
-RUN apt-get update && \
-      useradd -m -d /home/cartodb -s /bin/bash cartodb && \
-      apt-get install -y -q software-properties-common && \
-      add-apt-repository -y ppa:chris-lea/node.js && \
-      apt-get update
-RUN apt-get install -y nodejs git make automake g++ pkg-config \
-    python-setuptools python-simplejson \
-    libcairo2 libcairo2-dev libpq-dev
+RUN apt-key update && apt-get update
+RUN apt-get install -y curl sudo software-properties-common python-software-properties
+
+RUN useradd -m -d /home/cartodb -s /bin/bash cartodb && \
+    apt-get install -y software-properties-common && \
+    add-apt-repository -y ppa:cartodb/gis && \
+    add-apt-repository ppa:cartodb/postgresql-9.3 && \
+    add-apt-repository -y ppa:cartodb/nodejs-010 && \
+    apt-get update
+
+RUN apt-get install -y redis-server build-essential git-core pkg-config nodejs
+RUN apt-get install -y libpango1.0-dev libgif-dev libjpeg-dev libjpeg8-dev libcairo2-dev libpango1.0-dev
+RUN apt-get install -y python-setuptools python-simplejson \
+        postgresql-9.3-postgis-2.1 postgresql-plpython-9.3 postgresql-server-dev-9.3
+
+#update gcc
+RUN add-apt-repository ppa:ubuntu-toolchain-r/test
+RUN apt-get update -qq
+RUN apt-get install -y -qq gcc-4.9 g++-4.9
+RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
 
 RUN cd /home && git clone git://github.com/CartoDB/Windshaft-cartodb.git
 RUN cd /home/Windshaft-cartodb && ./configure
-RUN cd /home/Windshaft-cartodb && npm install --unsafe-perm
+RUN cd /home/Windshaft-cartodb && npm install
 RUN cd /home/Windshaft-cartodb && mkdir logs
 
 ADD ./config/WS-dev.js \

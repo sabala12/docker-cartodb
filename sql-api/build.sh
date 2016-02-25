@@ -1,3 +1,3 @@
 #!/bin/bash
 
-sudo docker build -t sql-api-2 ./
+sudo docker build -t carto:sql-api ./
