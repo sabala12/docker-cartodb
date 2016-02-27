@@ -1,21 +1,25 @@
 #--------- Generic stuff all our Dockerfiles should start with so we get caching ------------
-FROM ubuntu:precise
+FROM ubuntu:12.04
 MAINTAINER Tim Sutton<tim@kartoza.com>
 
 RUN  export DEBIAN_FRONTEND=noninteractive
 ENV  DEBIAN_FRONTEND noninteractive
 RUN  dpkg-divert --local --rename --add /sbin/initctl
+RUN locale-gen en_US.UTF-8
+RUN update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8
 
 # Use local cached debs from host (saves your bandwidth!)
 # Change ip below to that of your apt-cacher-ng host
 # Or comment this line out if you do not with to use caching
 ADD 71-apt-cacher-ng /etc/apt/apt.conf.d/71-apt-cacher-ng
 
+RUN apt-get install -y make git pwgen ca-certificates build-essential \
+    software-properties-common python-software-properties
+
 RUN add-apt-repository ppa:cartodb/postgresql-9.3
 RUN add-apt-repository ppa:cartodb/pg-schema-trigger
 RUN add-apt-repository ppa:cartodb/gis
-RUN apt-get update -y
-RUN apt-get -y install ca-certificates rpl pwgen make git
+RUN apt-get update
 
 #-------------Application Specific Stuff ----------------------------------------------------
 
@@ -25,15 +29,14 @@ RUN apt-get -y install ca-certificates rpl pwgen make git
 # postgresql-9.3-postgis-2.1 : Depends: libgdal1h (>= 1.9.0) but it is not going to be installed
 #                              Recommends: postgis but it is not going to be installed
 
-RUN apt-get -y install software-properties-common python-software-properties \
-    && git build-essential
-
 # Install client packages
 RUN apt-get install -y libpq5 libpq-dev postgresql-client-9.3 postgresql-client-common
 # Install server packages
 RUN apt-get install -y postgresql-9.3 postgresql-contrib-9.3 postgresql-server-dev-9.3 postgresql-plpython-9.3
 # Install schema triggers
 RUN apt-get install -y postgresql-9.3-pg-schema-triggers
+# Install python extension
+RUN apt-get install -y postgresql-contrib-9.3 postgresql-plpython3-9.3 
 
 RUN cd /home && git clone https://github.com/CartoDB/cartodb-postgresql.git
 RUN cd /home/cartodb-postgresql && make all install
@@ -48,11 +51,26 @@ RUN apt-get install -y libxml2-dev liblwgeom-2.1.8 \
     postgis postgresql-9.3-postgis-2.2 postgresql-9.3-postgis-scripts
 
 
+# Install schema_triggers
+RUN git clone https://github.com/CartoDB/pg_schema_triggers.git && \
+      cd pg_schema_triggers && \
+      make all install && \
+      sed -i \
+      "/#shared_preload/a shared_preload_libraries = 'schema_triggers.so'" \
+      /etc/postgresql/9.3/main/postgresql.conf 
+
+# Init template
+ADD ./template_postgis.sh /tmp/template_postgis.sh
+RUN chmod +x /tmp/template_postgis.sh
+RUN service postgresql start && /bin/su postgres -c \
+      /tmp/template_postgis.sh && service postgresql stop
+
 # Install cartodb extension
 RUN git clone --branch 0.5.1 https://github.com/CartoDB/cartodb-postgresql && \
       cd cartodb-postgresql && \
       PGUSER=postgres make install
 ADD ./cartodb_pgsql.sh /tmp/cartodb_pgsql.sh
+RUN chmod +x /tmp/cartodb_pgsql.sh
 RUN service postgresql start && /bin/su postgres -c \
       /tmp/cartodb_pgsql.sh && service postgresql stop
 

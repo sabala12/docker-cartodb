@@ -34,4 +34,4 @@ ADD ./config/WS-dev.js \
 
 COPY entry-point.sh /home
 RUN chmod 700 /home/entry-point.sh
-ENTRY [/home/entry-point.sh]
+ENTRYPOINT [/home/entry-point.sh]
