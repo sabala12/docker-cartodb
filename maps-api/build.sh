@@ -1,3 +1,3 @@
 #!/bin/bash
 
-sudo docker build -t maps-api ./
+sudo docker build -t carto/maps-api:latest ./

@@ -1,3 +1,3 @@
 #!/bin/bash
 
-sudo docker build -t carto ./
+sudo docker build -t carto/carto:latest ./
