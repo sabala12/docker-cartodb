@@ -4,11 +4,13 @@
 #
 
 POSTGIS_SQL_PATH=`pg_config --sharedir`/contrib/postgis-2.1.2;
+
 createuser publicuser --no-createrole --no-createdb --no-superuser -U postgres
 createuser tileuser --no-createrole --no-createdb --no-superuser -U postgres
 
 createdb -E UTF8 template_postgis;
-createlang -d template_postgis plpgsql;
+#createlang -d template_postgis plpgsql;
+
 psql -d postgres -c "UPDATE pg_database SET datistemplate='true' \
       WHERE datname='template_postgis'"
 psql -d template_postgis -c "CREATE EXTENSION postgis;"

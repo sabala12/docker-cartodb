@@ -2,6 +2,8 @@
 
 # This script will run as the postgres user due to the Dockerfile USER directive
 
+ldconfig
+
 DATADIR="/var/lib/postgresql/9.3/main"
 CONF="/etc/postgresql/9.3/main/postgresql.conf"
 POSTGRES="/usr/lib/postgresql/9.3/bin/postgres"
