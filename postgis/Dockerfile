@@ -59,21 +59,14 @@ RUN git clone https://github.com/CartoDB/pg_schema_triggers.git && \
       "/#shared_preload/a shared_preload_libraries = 'schema_triggers.so'" \
       /etc/postgresql/9.3/main/postgresql.conf 
 
+######move up######
 RUN apt-get install -y sudo
-# Init template
-#ADD ./template_postgis.sh /tmp/template_postgis.sh
-#RUN chmod +x /tmp/template_postgis.sh
-#RUN service postgresql start && su -c /tmp/template_postgis.sh -s /bin/sh postgres && \
-#    service postgresql stop
+###################
 
 # Install cartodb extension
 RUN git clone --branch 0.5.1 https://github.com/CartoDB/cartodb-postgresql && \
       cd cartodb-postgresql && \
       PGUSER=postgres make install
-#ADD ./cartodb_pgsql.sh /tmp/cartodb_pgsql.sh
-#RUN chmod +x /tmp/cartodb_pgsql.sh
-#RUN service postgresql start && /tmp/cartodb_pgsql.sh && service postgresql stop
-
 #---------------------------------------------------------------------------------------------
 
 ADD postgres.conf /etc/supervisor/conf.d/postgres.conf
@@ -83,16 +76,20 @@ EXPOSE 5432
 
 # RUN any additional tasks here that are too tedious to put in
 # this dockerfile directly.
-ADD postgres-conf.sh /home/postgres-conf.sh
-RUN chmod 0755 /home/postgres-conf.sh
-RUN /home/postgres-conf.sh
-RUN service postgresql restart
+ADD auth-configuration.sh /home/auth-configuration.sh
+RUN chmod 0755 /home/auth-configuration.sh
+RUN service postgresql start && home/auth-configuration.sh && \
+    service postgresql stop
 
 # Run carto-db setup tasks here
 ADD cartodb-setup.sh /home/cartodb-setup.sh
 RUN chmod 0755 /home/cartodb-setup.sh
 RUN service postgresql start &&  su -c "/home/cartodb-setup.sh" -s /bin/sh postgres && \
     service postgresql stop
+
+###move up###
+RUN apt-get install -y nano
+###move up###
 
 # We will RUN any commands in this when the container starts
 ADD start-postgis.sh /start-postgis.sh

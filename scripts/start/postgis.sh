@@ -2,7 +2,8 @@
 
 name="postgis"
 persistent_storage="/data/postgis"
-user_name="panda"
-pass="I_HATE_THIS_PLACE"
+user_name="cartodb"
+pass="no_more"
+database="carto_db_development"
 
-sudo ~/Projects/carto-db/postgis/run-postgis-docker.sh -n $name -v $persistent_storage -u $user_name -p $pass
+sudo ~/Projects/carto-db/postgis/run-postgis-docker.sh -n $name -v $persistent_storage -u $user_name -p $pass -d $database

@@ -134,3 +134,5 @@ PID=`cat /var/run/postgresql/9.3-main.pid`
 kill -9 ${PID}
 echo "Postgres initialisation process completed .... restarting in foreground"
 exec su - postgres -c "$POSTGRES -D $DATADIR -c config_file=$CONF"
+
+service postgresql restart

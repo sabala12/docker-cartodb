@@ -4,7 +4,12 @@
 CONF="/etc/postgresql/9.3/main/postgresql.conf"
 
 # Restrict subnet to docker private network
-echo "host    all             all             172.17.0.0/16               md5" >> /etc/postgresql/9.3/main/pg_hba.conf
+# Remove all login policy
+# sed -i '/# IPv4 local connections/d' /etc/postgresql/9.3/main/pg_hba.conf
+# sed -i '/127.0.0.1\/32/d' /etc/postgresql/9.3/main/pg_hba.conf
+# Set new login policy
+echo "# IPv4 local connections"                                           >> /etc/postgresql/9.3/main/pg_hba.conf
+echo "host    all             all             0.0.0.0/0               md5" >> /etc/postgresql/9.3/main/pg_hba.conf
 # Listen on all ip addresses
 echo "listen_addresses = '*'" >> /etc/postgresql/9.3/main/postgresql.conf
 echo "port = 5432" >> /etc/postgresql/9.3/main/postgresql.conf

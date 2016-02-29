@@ -9,6 +9,9 @@ RUN apt-get install -y sudo software-properties-common python-software-propertie
 RUN add-apt-repository ppa:cartodb/redis && sudo apt-get update
 RUN apt-get install -y redis-server
 
+EXPOSE 6379
+EXPOSE 6335
+
 ADD entry-point.sh /home/
 RUN chmod 754 /home/entry-point.sh
 RUN ls /home

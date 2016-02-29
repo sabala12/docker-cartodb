@@ -17,10 +17,11 @@ OPTIONS:
    -v      Volume to mount the Postgres cluster into
    -u      Postgres user name (defaults to 'docker')
    -p      Postgres password  (defaults to 'docker')
+   -d      Postgres defaults database (defaults to 'postgres')
 EOF
 }
 
-while getopts ":h:n:v:u:p:" OPTION
+while getopts ":h:n:v:u:p:d:" OPTION
 do
      case $OPTION in
          n)
@@ -34,6 +35,9 @@ do
              ;;
          p)
              PGPASSWORD=${OPTARG}
+             ;;
+         d)
+             DATABASE=${OPTARG}
              ;;
          *)
              usage
@@ -62,14 +66,17 @@ then
 fi
 chmod a+w $VOLUME
 
-docker kill ${CONTAINER_NAME}
-docker rm ${CONTAINER_NAME}
+docker kill ${CONTAINER_NAME} >& /dev/null
+docker rm ${CONTAINER_NAME} >& /dev/null
 
-CMD="docker run --name="${CONTAINER_NAME}" \
+export PGPASSWORD=$PGPASSWORD
+
+CMD="sudo docker run --name="${CONTAINER_NAME}" \
         --hostname="${CONTAINER_NAME}" \
         --restart=always \
 	-e POSTGRES_USER=${PGUSER} \
 	-e POSTGRES_PASS=${PGPASSWORD} \
+        -p 5432:5432 \
 	-d -t \
         ${VOLUME_OPTION} \
 	kartoza/postgis /start-postgis.sh"
@@ -92,3 +99,12 @@ echo "Will make the connection details to the postgis server available"
 echo "in your app container as $PG_PORT_5432_TCP_ADDR (for the ip address)"
 echo "and $PG_PORT_5432_TCP_PORT (for the port number)."
 
+sleep 2
+
+sudo docker exec ${CONTAINER_NAME} service postgresql restart
+
+if psql -U $PGUSER -h localhost -d postgres -c | cut -d \| -f 1 | grep -w $DATABASE; then
+    echo "Database $DATABASE already exists"
+else
+    psql -U $PGUSER -h localhost -d postgres -c "CREATE DATABASE $DATABASE;"
+fi

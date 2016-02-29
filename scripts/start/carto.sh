@@ -2,4 +2,13 @@
 
 root="/path to postgis parent dir/"
 
-sudo docker run --name="carto" --link postgis:postgis --link redis:redis --link maps-api:maps-api --link sql-api:sql-api cartodb/cartodb:latest
+CMD="sudo docker run --name="carto" \
+    --link redis:redis --link postgis:postgis \
+    --link sql-api:sql-api --link maps-api:maps-api \
+    -p 3000:3000 \
+    -it \
+    cartodb/cartodb:latest"
+
+echo 'Running cartodb'
+echo $CMD
+eval $CMD
