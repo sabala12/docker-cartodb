@@ -1,4 +1,4 @@
 #!/bin/bash
 
-cd /CartoDB-SQL-API
+cd $CARTO_SQL_DIR
 node app.js development

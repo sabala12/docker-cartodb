@@ -25,13 +25,11 @@ RUN apt-get install -y -qq gcc-4.9 g++-4.9
 RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
 
 RUN cd /home && git clone git://github.com/CartoDB/Windshaft-cartodb.git
-RUN cd /home/Windshaft-cartodb && ./configure
-RUN cd /home/Windshaft-cartodb && npm install
-RUN cd /home/Windshaft-cartodb && mkdir logs
-
-ADD ./config/WS-dev.js \
-      /Windshaft-cartodb/config/environments/development.js
+ENV WIND_DIR /home/Windshaft-cartodb
+RUN cd $WIND_DIR && ./configure
+RUN cd $WIND_DIR && npm install
+RUN cd $WIND_DIR && mkdir logs
 
 COPY entry-point.sh /home
-RUN chmod 700 /home/entry-point.sh
-ENTRYPOINT [/home/entry-point.sh]
+RUN chmod 754 /home/entry-point.sh
+ENTRYPOINT ["/home/entry-point.sh"]

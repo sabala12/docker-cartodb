@@ -1,4 +1,4 @@
 #!/bin/bash
 
-cd /Windshaft-cartodb
-node app.js development &
+cd $WIND_DIR
+node app.js development 

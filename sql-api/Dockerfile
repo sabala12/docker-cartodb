@@ -34,12 +34,11 @@ RUN apt-get install -y gcc-4.9 g++-4.9
 RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 50 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
 
 RUN cd /home && git clone git://github.com/CartoDB/CartoDB-SQL-API.git
-RUN cd /home/CartoDB-SQL-API && ./configure
-RUN cd /home/CartoDB-SQL-API && npm install 
-
-ADD ./config/CartoDB-dev.js \
-      /CartoDB-SQL-API/config/environments/development.js
+ENV CARTO_SQL_DIR /home/CartoDB-SQL-API
+RUN ls /home
+RUN cd $CARTO_SQL_DIR && ./configure
+RUN cd $CARTO_SQL_DIR && npm install 
 
 COPY entry-point.sh /home
-RUN chmod 700 /home/entry-point.sh
-ENTRYPOINT [/home/entry-point.sh]
+RUN chmod 754 /home/entry-point.sh
+ENTRYPOINT ["/home/entry-point.sh"]
