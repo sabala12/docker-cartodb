@@ -76,8 +76,9 @@ CMD="sudo docker run --name="${CONTAINER_NAME}" \
         --restart=always \
 	-e POSTGRES_USER=${PGUSER} \
 	-e POSTGRES_PASS=${PGPASSWORD} \
+        -e POSTGRES_DATABASE=${DATABASE} \
         -p 5432:5432 \
-	-d -t \
+	-it -d \
         ${VOLUME_OPTION} \
 	kartoza/postgis /start-postgis.sh"
 
@@ -99,12 +100,12 @@ echo "Will make the connection details to the postgis server available"
 echo "in your app container as $PG_PORT_5432_TCP_ADDR (for the ip address)"
 echo "and $PG_PORT_5432_TCP_PORT (for the port number)."
 
-sleep 2
-
+echo "wait for container..."
+sleep 10
 sudo docker exec ${CONTAINER_NAME} service postgresql restart
 
-if psql -U $PGUSER -h localhost -d postgres -c | cut -d \| -f 1 | grep -w $DATABASE; then
-    echo "Database $DATABASE already exists"
-else
-    psql -U $PGUSER -h localhost -d postgres -c "CREATE DATABASE $DATABASE;"
-fi
+#if psql -U $PGUSER -h localhost -d postgres -c | cut -d \| -f 1 | grep -w $DATABASE; then
+#    echo "Database $DATABASE already exists"
+#else
+#    psql -U $PGUSER -h localhost -d postgres -c "CREATE DATABASE $DATABASE;"
+#fi

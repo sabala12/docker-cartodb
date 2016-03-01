@@ -27,29 +27,29 @@ defaults: &defaults
     filter: 'mapnik'
     internal:
       protocol:      'http'
-      domain:        'localhost.lan'
+      domain:        'MAPS_API_PORT_8181_TCP_ADDR'
       port:          '8181'
       host:          '127.0.0.1'
       verifycert:     false
     private:
       protocol:      'http'
-      domain:        'localhost.lan'
+      domain:        'MAPS_API_PORT_8181_TCP_ADDR'
       port:          '8181'
       verifycert:     false
     public:
       protocol:      'http'
-      domain:        'localhost.lan'
+      domain:        'MAPS_API_PORT_8181_TCP_ADDR'
       port:          '8181'
       verifycert:     false
   sql_api:
     private:
       protocol:   'http'
-      domain:     'localhost.lan'
+      domain:     'SQL_API_PORT_8080_TCP_ADDR'
       endpoint:   '/api/v1/sql'
       port:       8080
     public:
       protocol:   'http'
-      domain:     'localhost.lan'
+      domain:     'SQL_API_PORT_8080_TCP_ADDR'
       endpoint:   '/api/v2/sql'
       port:       8080
   api_requests_service_url: ''
@@ -139,7 +139,7 @@ defaults: &defaults
     timeout: 5 # socket timeout
     trigger_verbose: true
   redis:
-    host: 'REDIS_TCP_ADDR'
+    host: 'REDIS_PORT_6379_TCP_ADDR'
     port: 6379
     timeout: 20
     databases:
@@ -476,7 +476,7 @@ test:
   <<: *defaults
   http_port: 53716
   redis:
-    host: 'REDIS_TCP_ADDR'
+    host: 'REDIS_PORT_6335_TCP_ADDR'
     port: 6335
   enforce_non_empty_layer_css: false
   api_requests_es_service:

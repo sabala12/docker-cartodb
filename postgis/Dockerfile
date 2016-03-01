@@ -81,15 +81,13 @@ RUN chmod 0755 /home/auth-configuration.sh
 RUN service postgresql start && home/auth-configuration.sh && \
     service postgresql stop
 
+###move up###
+RUN apt-get install -y nano netcat
+###move up###
+
 # Run carto-db setup tasks here
 ADD cartodb-setup.sh /home/cartodb-setup.sh
 RUN chmod 0755 /home/cartodb-setup.sh
-RUN service postgresql start &&  su -c "/home/cartodb-setup.sh" -s /bin/sh postgres && \
-    service postgresql stop
-
-###move up###
-RUN apt-get install -y nano
-###move up###
 
 # We will RUN any commands in this when the container starts
 ADD start-postgis.sh /start-postgis.sh

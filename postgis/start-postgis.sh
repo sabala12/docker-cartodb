@@ -1,7 +1,6 @@
 #!/bin/bash
 
 # This script will run as the postgres user due to the Dockerfile USER directive
-
 ldconfig
 
 DATADIR="/var/lib/postgresql/9.3/main"
@@ -84,6 +83,9 @@ until `nc -z 127.0.0.1 5432`; do
 done
 echo "postgres ready"
 
+# set envs for user postgres
+su - postgres -c "echo 'export POSTGRES_DATABASE=$POSTGRES_DATABASE' >> ~/.profile"
+su - postgres -c "source ~/.profile"
 
 RESULT=`su - postgres -c "psql -l | grep postgis | wc -l"`
 if [[ ${RESULT} == '1' ]]
@@ -125,8 +127,14 @@ else
     su - postgres -c "psql template_postgis -f $SQLDIR/legacy_gist.sql"
     # Create a default db called 'gis' that you can use to get up and running quickly
     # It will be owned by the docker db user
-    su - postgres -c "createdb -O $POSTGRES_USER -T template_postgis gis"
+
+    # cartodb settings
+    su - postgres -c "/home/cartodb-setup.sh"
+
+    su - postgres -c "createdb -O $POSTGRES_USER -T template_postgis $POSTGRES_DATABASE;"
+    #su - postgres -c "psql -c "grant all privileges on database $POSTGRES_DATABASE to $POSTGRES_USER;""
 fi
+
 # This should show up in docker logs afterwards
 su - postgres -c "psql -l"
 
@@ -135,4 +143,3 @@ kill -9 ${PID}
 echo "Postgres initialisation process completed .... restarting in foreground"
 exec su - postgres -c "$POSTGRES -D $DATADIR -c config_file=$CONF"
 
-service postgresql restart

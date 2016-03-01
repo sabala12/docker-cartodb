@@ -39,6 +39,8 @@ RUN ls /home
 RUN cd $CARTO_SQL_DIR && ./configure
 RUN cd $CARTO_SQL_DIR && npm install 
 
+EXPOSE 8080
+
 COPY entry-point.sh /home
 RUN chmod 754 /home/entry-point.sh
 ENTRYPOINT ["/home/entry-point.sh"]

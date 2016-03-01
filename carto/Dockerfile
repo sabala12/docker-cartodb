@@ -67,6 +67,7 @@ ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en  
 ENV LC_ALL en_US.UTF-8
 RUN apt-get install -y vim
+ENV REDIS_PORT 6379
 #########move up##########
 
 RUN cd $CARTODB_DIR && bundle exec grunt --environment development
@@ -77,6 +78,10 @@ ADD ./config/app_config.yml $CARTODB_DIR/config/app_config.yml
 ADD ./config/database.yml $CARTODB_DIR/config/database.yml
 
 EXPOSE 3000
+
+####move up#####
+RUN apt-get install -y net-tools htop
+################
 
 COPY entry-point.sh /home
 RUN chmod 754 /home/entry-point.sh

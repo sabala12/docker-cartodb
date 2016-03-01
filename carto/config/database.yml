@@ -1,7 +1,7 @@
 production:
   adapter: postgres
   encoding: unicode
-  host: $POSTGIS_PORT_5432_TCP_ADDR
+  host: POSTGIS_PORT_5432_TCP_ADDR
   port: 5432
   database: carto_db_production
   username: cartodb
@@ -11,7 +11,7 @@ production:
 staging:
   adapter: postgres
   encoding: unicode
-  host: $POSTGIS_PORT_5432_TCP_ADD
+  host: POSTGIS_PORT_5432_TCP_ADDR
   port: 5432
   database: carto_db_staging
   username: cartodb
@@ -21,7 +21,7 @@ staging:
 development:
   adapter: postgres
   encoding: unicode
-  host: $POSTGIS_PORT_5432_TCP_ADD
+  host: POSTGIS_PORT_5432_TCP_ADDR
   port: 5432
   database: carto_db_development
   username: cartodb
@@ -33,7 +33,7 @@ test:
   adapter: postgres
   encoding: unicode
   database: carto_db_test
-  host: $POSTGIS_PORT_5432_TCP_ADD
+  host: POSTGIS_PORT_5432_TCP_ADDR
   port: 5432  
   username: cartodb
   password:

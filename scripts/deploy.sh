@@ -8,6 +8,5 @@ $root"/kill_all.sh"
 echo -e "\nfinish removing old containers"
 
 for container in ${CONTAINERS[@]}; do
-    echo -e "\ndeploing $container"
     sudo $root"/start/"$container".sh"
 done

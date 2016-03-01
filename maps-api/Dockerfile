@@ -30,6 +30,8 @@ RUN cd $WIND_DIR && ./configure
 RUN cd $WIND_DIR && npm install
 RUN cd $WIND_DIR && mkdir logs
 
+EXPOSE 8181
+
 COPY entry-point.sh /home
 RUN chmod 754 /home/entry-point.sh
 ENTRYPOINT ["/home/entry-point.sh"]

@@ -4,21 +4,21 @@
 #
 
 POSTGIS_SQL_PATH=`pg_config --sharedir`/contrib/postgis-2.1.2;
+psql -d template_postgis -c "CREATE USER publicuser WITH NOCREATEROLE NOCREATEDB NOSUPERUSER;"
+psql -d template_postgis -c "CREATE USER tileuser WITH NOCREATEROLE NOCREATEDB NOSUPERUSER;"
 
-createuser publicuser --no-createrole --no-createdb --no-superuser -U postgres
-createuser tileuser --no-createrole --no-createdb --no-superuser -U postgres
+#psql -d template_postgis -c "CREATE LANGUAGE plpgsql;"
 
-createdb -E UTF8 template_postgis;
-#createlang -d template_postgis plpgsql;
-
-psql -d postgres -c "UPDATE pg_database SET datistemplate='true' \
+psql -d template_postgis -c "UPDATE pg_database SET datistemplate='true' \
       WHERE datname='template_postgis'"
-psql -d template_postgis -c "CREATE EXTENSION postgis;"
-psql -d template_postgis -c "CREATE EXTENSION postgis_topology;"
+#psql -d template_postgis -c "CREATE EXTENSION postgis;"
+#psql -d template_postgis -c "CREATE EXTENSION postgis_topology;"
 psql -d template_postgis -c "GRANT ALL ON geometry_columns TO PUBLIC;"
 psql -d template_postgis -c "GRANT ALL ON spatial_ref_sys TO PUBLIC;"
-psql -c "CREATE EXTENSION plpythonu;"
-psql -c "CREATE EXTENSION schema_triggers;"
+psql -d template_postgis -c "CREATE EXTENSION plpythonu;"
+psql -d template_postgis -c "CREATE EXTENSION schema_triggers;"
 
-psql -c "CREATE EXTENSION postgis;"
-psql -c "CREATE EXTENSION cartodb;"
+psql -d template_postgis -c "CREATE EXTENSION cartodb;"
+
+#export PGPASSWORD=$POSTGRES_PASS
+#unset PGPASSWORD
