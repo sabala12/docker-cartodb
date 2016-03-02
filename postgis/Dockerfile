@@ -38,13 +38,11 @@ RUN apt-get install -y postgresql-9.3-pg-schema-triggers
 # Install python extension
 RUN apt-get install -y postgresql-contrib-9.3 postgresql-plpython3-9.3 
 
-RUN cd /home && git clone https://github.com/CartoDB/cartodb-postgresql.git
-RUN cd /home/cartodb-postgresql && make all install
-
 # GIS dependencies
-RUN apt-get install -y proj proj-bin proj-data libproj-dev \
-    libjson0 libjson0-dev python-simplejson libgeos-c1v5 libgeos-dev \
-    gdal-bin libgdal1-dev libgdal-dev ogr2ogr2-static-bin
+RUN apt-get update
+RUN apt-get install -y proj proj-bin proj-data libproj-dev
+RUN apt-get install -y libjson0 libjson0-dev python-simplejson libgeos-c1v5 libgeos-dev
+RUN apt-get install -y gdal-bin libgdal1-dev libgdal-dev ogr2ogr2-static-bin
 
 # Postgis
 RUN apt-get install -y libxml2-dev liblwgeom-2.1.8 \
@@ -64,9 +62,15 @@ RUN apt-get install -y sudo
 ###################
 
 # Install cartodb extension
-RUN git clone --branch 0.5.1 https://github.com/CartoDB/cartodb-postgresql && \
-      cd cartodb-postgresql && \
-      PGUSER=postgres make install
+RUN cd /home && git clone https://github.com/CartoDB/cartodb-postgresql
+RUN cd /home/cartodb-postgresql && git fetch --tags \
+    && export latestTag=$(git describe --tags `git rev-list --tags --max-count=1`) && echo $latestTag \
+    && git checkout $latestTag
+RUN cd /home/cartodb-postgresql && make all install
+
+#RUN service postgresql start \
+#    && su - postgres -c "cd /home/cartodb-postgresql && PGUSER=postgres make installcheck" \
+#    && service postgresql stop
 #---------------------------------------------------------------------------------------------
 
 ADD postgres.conf /etc/supervisor/conf.d/postgres.conf

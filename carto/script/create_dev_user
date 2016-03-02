@@ -1,0 +1,11 @@
+#!/bin/sh
+
+SUBDOMAIN="development"
+PASSWORD="cartodb3"
+ADMIN_PASSWORD="cartodb3"
+EMAIL="sabalah21gmail.com"
+
+echo "--- Creating dev user"
+bundle exec rake cartodb:db:create_dev_user --trace SUBDOMAIN="${SUBDOMAIN}" \
+        PASSWORD="${PASSWORD}" \
+        EMAIL="${EMAIL}"

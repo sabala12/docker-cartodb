@@ -72,17 +72,19 @@ ENV REDIS_PORT 6379
 
 RUN cd $CARTODB_DIR && bundle exec grunt --environment development
 
-#RUN cp $CARTODB_DIR/config/app_config.yml.sample $CARTODB_DIR/config/app_config.yml
-#RUN cp $CARTODB_DIR/config/database.yml.sample $CARTODB_DIR/config/database.yml
-ADD ./config/app_config.yml $CARTODB_DIR/config/app_config.yml
-ADD ./config/database.yml $CARTODB_DIR/config/database.yml
-
-EXPOSE 3000
-
 ####move up#####
 RUN apt-get install -y net-tools htop
 ################
 
-COPY entry-point.sh /home
+ADD ./config/app_config.yml $CARTODB_DIR/config/app_config.yml
+ADD ./config/database.yml $CARTODB_DIR/config/database.yml
+ADD ./script/setup_user $CARTODB_DIR/script/setup_user
+ADD ./script/create_dev_user $CARTODB_DIR/script/create_dev_user
+RUN chmod +x $CARTODB_DIR/script/create_dev_user
+RUN chmod +x $CARTODB_DIR/script/setup_user
+
+EXPOSE 3000
+
+COPY entry-point.sh /home/
 RUN chmod 754 /home/entry-point.sh
 ENTRYPOINT ["/home/entry-point.sh"]

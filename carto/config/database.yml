@@ -24,7 +24,7 @@ development:
   host: POSTGIS_PORT_5432_TCP_ADDR
   port: 5432
   database: carto_db_development
-  username: cartodb
+  username: development
   password: no_more
   conn_validator_timeout: 900
   pool: 50
