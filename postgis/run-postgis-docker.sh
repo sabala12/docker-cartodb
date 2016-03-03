@@ -21,6 +21,47 @@ OPTIONS:
 EOF
 }
 
+test_connection()
+{
+    echo "trying to estabish connection..."
+    echo "ip=$IPADDRESS"
+    echo "user=$PGUSER"
+    echo "database=$DATABASE"
+    echo "password=$PGPASSWORD"
+    sql_test="select case when true then 'true' end;"
+    sql_result=$(psql -h $IPADDRESS -U $PGUSER -d $DATABASE -c "$sql_test")
+    
+    if [[ "$sql_result" =~ .*true.* ]]; then
+        return 1
+    else
+        echo "second shoot"
+        sleep 10
+        sudo docker exec ${CONTAINER_NAME} service postgresql restart
+        sql_result=$(psql -h $IPADDRESS -U $PGUSER -d $DATABASE -c "$sql_test")
+        if [[ "$sql_result" =~ .*false.* ]]; then
+            return 0
+        else
+            return 1
+        fi
+    fi
+}
+
+validate_and_exit()
+{
+    test_connection
+    local connection_status=$?
+    if [[ connection_status -ne 1 ]]; then
+        echo "failed to established connection to database ):"
+    else
+        echo "good to go (:"
+#echo "Connect using:"
+#echo "psql -l -p 5432 -h $IPADDRESS -U $PGUSER"
+#echo "and password $PGPASSWORD"
+    fi
+    exit 0
+}
+
+
 while getopts ":h:n:v:u:p:d:" OPTION
 do
      case $OPTION in
@@ -46,7 +87,19 @@ do
      esac
 done
 
+export PGPASSWORD=$PGPASSWORD
+IPADDRESS=`docker inspect $CONTAINER_NAME | grep IPAddress | grep -o '[0-9\.]*'`
+RUNNING=$(docker inspect --format="{{ .State.Running }}" $CONTAINER_NAME 2> /dev/null)
+echo $RUNNING
+if [[ "$RUNNING" == "true" ]]; then
+    echo "container $CONTAINER_NAME already running!"
+    validate_and_exit
+fi
 
+# make sure container does not exist
+sudo docker rm $CONTAINER_NAME >& /dev/null
+
+echo "configuring parameters..."
 if [[ -z $VOLUME ]] || [[ -z $CONTAINER_NAME ]] || [[ -z $PGUSER ]] || [[ -z $PGPASSWORD ]] 
 then
      usage
@@ -66,11 +119,6 @@ then
 fi
 chmod a+w $VOLUME
 
-docker kill ${CONTAINER_NAME} >& /dev/null
-docker rm ${CONTAINER_NAME} >& /dev/null
-
-export PGPASSWORD=$PGPASSWORD
-
 CMD="sudo docker run --name="${CONTAINER_NAME}" \
         --hostname="${CONTAINER_NAME}" \
         --restart=always \
@@ -82,30 +130,8 @@ CMD="sudo docker run --name="${CONTAINER_NAME}" \
         ${VOLUME_OPTION} \
 	kartoza/postgis /start-postgis.sh"
 
-echo 'Running\n'
 echo $CMD
 eval $CMD
 
-docker ps | grep ${CONTAINER_NAME}
-
-IPADDRESS=`docker inspect postgis | grep IPAddress | grep -o '[0-9\.]*'`
-
-echo "Connect using:"
-echo "psql -l -p 5432 -h $IPADDRESS -U $PGUSER"
-echo "and password $PGPASSWORD"
-echo
-echo "Alternatively link to this container from another to access it"
-echo "e.g. docker run -link postgis:pg .....etc"
-echo "Will make the connection details to the postgis server available"
-echo "in your app container as $PG_PORT_5432_TCP_ADDR (for the ip address)"
-echo "and $PG_PORT_5432_TCP_PORT (for the port number)."
-
-echo "wait for container..."
-sleep 10
-sudo docker exec ${CONTAINER_NAME} service postgresql restart
-
-#if psql -U $PGUSER -h localhost -d postgres -c | cut -d \| -f 1 | grep -w $DATABASE; then
-#    echo "Database $DATABASE already exists"
-#else
-#    psql -U $PGUSER -h localhost -d postgres -c "CREATE DATABASE $DATABASE;"
-#fi
+IPADDRESS=`docker inspect $CONTAINER_NAME | grep IPAddress | grep -o '[0-9\.]*'`
+validate_and_exit

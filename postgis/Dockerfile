@@ -48,18 +48,16 @@ RUN apt-get install -y gdal-bin libgdal1-dev libgdal-dev ogr2ogr2-static-bin
 RUN apt-get install -y libxml2-dev liblwgeom-2.1.8 \
     postgis postgresql-9.3-postgis-2.2 postgresql-9.3-postgis-scripts
 
+# Other dependencies
+RUN apt-get install -y sudo nano netcat
 
 # Install schema_triggers
-RUN git clone https://github.com/CartoDB/pg_schema_triggers.git && \
-      cd pg_schema_triggers && \
-      make all install && \
-      sed -i \
-      "/#shared_preload/a shared_preload_libraries = 'schema_triggers.so'" \
-      /etc/postgresql/9.3/main/postgresql.conf 
-
-######move up######
-RUN apt-get install -y sudo
-###################
+#RUN git clone https://github.com/CartoDB/pg_schema_triggers.git && \
+#      cd pg_schema_triggers && \
+#      make all install && \
+#      sed -i \
+#      "/#shared_preload/a shared_preload_libraries = 'schema_triggers.so'" \
+#      /etc/postgresql/9.3/main/postgresql.conf 
 
 # Install cartodb extension
 RUN cd /home && git clone https://github.com/CartoDB/cartodb-postgresql
@@ -78,20 +76,17 @@ ADD postgres.conf /etc/supervisor/conf.d/postgres.conf
 # Open port 5432 so linked containers can see them
 EXPOSE 5432
 
-# RUN any additional tasks here that are too tedious to put in
+#---------------------------Tedious Tasks--------------------------------------------------------
 # this dockerfile directly.
 ADD auth-configuration.sh /home/auth-configuration.sh
 RUN chmod 0755 /home/auth-configuration.sh
-RUN service postgresql start && home/auth-configuration.sh && \
+RUN service postgresql start && /home/auth-configuration.sh && \
     service postgresql stop
-
-###move up###
-RUN apt-get install -y nano netcat
-###move up###
 
 # Run carto-db setup tasks here
 ADD cartodb-setup.sh /home/cartodb-setup.sh
 RUN chmod 0755 /home/cartodb-setup.sh
+#-------------------------------------------------------------------------------------------------
 
 # We will RUN any commands in this when the container starts
 ADD start-postgis.sh /start-postgis.sh

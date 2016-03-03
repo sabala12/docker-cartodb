@@ -1,7 +1,7 @@
 #!/bin/bash
 
 root=$(dirname $0)
-CONTAINERS=("redis" "postgus" "sql-api" "maps-api" "carto")
+CONTAINERS=("redis" "sql-api" "maps-api" "carto")
 
 for container in ${CONTAINERS[@]}; do
     
