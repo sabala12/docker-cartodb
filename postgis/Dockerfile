@@ -2,24 +2,19 @@
 FROM ubuntu:12.04
 MAINTAINER Tim Sutton<tim@kartoza.com>
 
-RUN  export DEBIAN_FRONTEND=noninteractive
-ENV  DEBIAN_FRONTEND noninteractive
-RUN  dpkg-divert --local --rename --add /sbin/initctl
+ENV DEBIAN_FRONTEND noninteractive
 RUN locale-gen en_US.UTF-8
 RUN update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8
 
-# Use local cached debs from host (saves your bandwidth!)
-# Change ip below to that of your apt-cacher-ng host
-# Or comment this line out if you do not with to use caching
-ADD 71-apt-cacher-ng /etc/apt/apt.conf.d/71-apt-cacher-ng
+RUN apt-get update && apt-get install -y software-properties-common python-software-properties
 
-RUN apt-get install -y make git pwgen ca-certificates build-essential \
-    software-properties-common python-software-properties
+RUN add-apt-repository ppa:cartodb/postgresql-9.3 && \
+    add-apt-repository ppa:cartodb/gis && \
+    apt-get update
 
-RUN add-apt-repository ppa:cartodb/postgresql-9.3
-RUN add-apt-repository ppa:cartodb/pg-schema-trigger
-RUN add-apt-repository ppa:cartodb/gis
-RUN apt-get update
+# Some dependencies
+RUN apt-get install -y autoconf binutils-doc bison build-essential
+RUN apt-get install -y flex sudo nano netcat git make pwgen ca-certificates 
 
 #-------------Application Specific Stuff ----------------------------------------------------
 
@@ -33,42 +28,52 @@ RUN apt-get update
 RUN apt-get install -y libpq5 libpq-dev postgresql-client-9.3 postgresql-client-common
 # Install server packages
 RUN apt-get install -y postgresql-9.3 postgresql-contrib-9.3 postgresql-server-dev-9.3 postgresql-plpython-9.3
-# Install schema triggers
-RUN apt-get install -y postgresql-9.3-pg-schema-triggers
-# Install python extension
-RUN apt-get install -y postgresql-contrib-9.3 postgresql-plpython3-9.3 
 
 # GIS dependencies
-RUN apt-get update
 RUN apt-get install -y proj proj-bin proj-data libproj-dev
-RUN apt-get install -y libjson0 libjson0-dev python-simplejson libgeos-c1v5 libgeos-dev
-RUN apt-get install -y gdal-bin libgdal1-dev libgdal-dev ogr2ogr2-static-bin
+RUN apt-get install -y libjson0 libjson0-dev python-simplejson
+RUN apt-get install -y libgeos-c1v5 libgeos-dev
+RUN apt-get install -y gdal-bin libgdal1-dev libgdal-dev
+RUN apt-get install -y ogr2ogr2-static-bin
 
 # Postgis
 RUN apt-get install -y libxml2-dev liblwgeom-2.1.8 \
     postgis postgresql-9.3-postgis-2.2 postgresql-9.3-postgis-scripts
 
-# Other dependencies
-RUN apt-get install -y sudo nano netcat
+# Set connections policy
+RUN rm /etc/postgresql/9.3/main/pg_hba.conf
+ADD ./pg_hba.conf /etc/postgresql/9.3/main/pg_hba.conf
+RUN service postgresql restart
 
-# Install schema_triggers
-#RUN git clone https://github.com/CartoDB/pg_schema_triggers.git && \
-#      cd pg_schema_triggers && \
-#      make all install && \
-#      sed -i \
-#      "/#shared_preload/a shared_preload_libraries = 'schema_triggers.so'" \
-#      /etc/postgresql/9.3/main/postgresql.conf 
+ADD auth-configuration.sh /home/auth-configuration.sh
+RUN chmod 0755 /home/auth-configuration.sh
+RUN service postgresql start && /home/auth-configuration.sh && \
+    service postgresql stop
+
+# Create some users for cartodb app
+RUN service postgresql start && \ 
+    createuser publicuser --no-createrole --no-createdb --no-superuser -U postgres && \
+    createuser tileuser --no-createrole --no-createdb --no-superuser -U postgres && \
+    service postgresql stop
 
 # Install cartodb extension
-RUN cd /home && git clone https://github.com/CartoDB/cartodb-postgresql
-RUN cd /home/cartodb-postgresql && git fetch --tags \
-    && export latestTag=$(git describe --tags `git rev-list --tags --max-count=1`) && echo $latestTag \
-    && git checkout $latestTag
-RUN cd /home/cartodb-postgresql && make all install
-
-#RUN service postgresql start \
-#    && su - postgres -c "cd /home/cartodb-postgresql && PGUSER=postgres make installcheck" \
-#    && service postgresql stop
+#RUN cd /home && git clone https://github.com/CartoDB/cartodb-postgresql
+#RUN cd /home/cartodb-postgresql && git fetch --tags \
+#    && export latestTag=$(git describe --tags `git rev-list --tags --max-count=1`) && echo $latestTag \
+#    && git checkout master
+#RUN service postgresql start && \
+#    cd /home/cartodb-postgresql && make all install && \
+#    service postgresql stop
+#
+#RUN service postgresql start && \
+#    createdb -T template0 -O postgres -U postgres -E UTF8 template_postgis && \
+##    createlang plpgsql -U postgres -d template_postgis && \
+#    psql -U postgres template_postgis -c 'CREATE EXTENSION postgis;CREATE EXTENSION postgis_topology;' && \
+#    ldconfig
+#
+#RUN cat /etc/postgresql/9.3/main/postgresql.conf
+#RUN service postgresql start && cd /home/cartodb-postgresql && PGUSER=postgres make installcheck && \
+#    service postgresql stop
 #---------------------------------------------------------------------------------------------
 
 ADD postgres.conf /etc/supervisor/conf.d/postgres.conf
@@ -77,15 +82,13 @@ ADD postgres.conf /etc/supervisor/conf.d/postgres.conf
 EXPOSE 5432
 
 #---------------------------Tedious Tasks--------------------------------------------------------
-# this dockerfile directly.
-ADD auth-configuration.sh /home/auth-configuration.sh
-RUN chmod 0755 /home/auth-configuration.sh
-RUN service postgresql start && /home/auth-configuration.sh && \
-    service postgresql stop
-
-# Run carto-db setup tasks here
+# carto-db psql setup
 ADD cartodb-setup.sh /home/cartodb-setup.sh
 RUN chmod 0755 /home/cartodb-setup.sh
+
+# carto-db postgres extension
+ADD cartodb-postgres-extension.sh /home/cartodb-postgres-extension.sh
+RUN chmod 0755 /home/cartodb-postgres-extension.sh
 #-------------------------------------------------------------------------------------------------
 
 # We will RUN any commands in this when the container starts

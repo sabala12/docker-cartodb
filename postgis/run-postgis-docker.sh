@@ -126,7 +126,7 @@ CMD="sudo docker run --name="${CONTAINER_NAME}" \
 	-e POSTGRES_PASS=${PGPASSWORD} \
         -e POSTGRES_DATABASE=${DATABASE} \
         -p 5432:5432 \
-	-it -d \
+	-it \
         ${VOLUME_OPTION} \
 	kartoza/postgis /start-postgis.sh"
 

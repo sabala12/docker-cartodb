@@ -38,7 +38,6 @@ chown -R postgres:postgres $DATADIR
 # If you dont specify a user/password in docker run, we will generate one
 # here and create a user called 'docker' to go with it.
 
-
 # test if DATADIR has content
 if [ ! "$(ls -A $DATADIR)" ]; then
 
@@ -87,6 +86,10 @@ echo "postgres ready"
 su - postgres -c "echo 'export POSTGRES_DATABASE=$POSTGRES_DATABASE' >> ~/.profile"
 su - postgres -c "source ~/.profile"
 
+# start postgres service
+service postgresql restart
+
+
 RESULT=`su - postgres -c "psql -l | grep postgis | wc -l"`
 if [[ ${RESULT} == '1' ]]
 then
@@ -99,6 +102,7 @@ then
         echo 'TOPOLOGY is only useful when you create the postgis database.'
     fi
 else
+
     echo "Postgis is missing, installing now"
     # Note the dockerfile must have put the postgis.sql and spatialrefsys.sql scripts into /root/
     # We use template0 since we want t different encoding to template1
@@ -128,6 +132,9 @@ else
     # Create a default db called 'gis' that you can use to get up and running quickly
     # It will be owned by the docker db user
 
+    # postgresql cartodb extension
+    /home/cartodb-postgres-extension.sh
+
     # cartodb settings
     su - postgres -c "/home/cartodb-setup.sh"
 
@@ -142,4 +149,3 @@ PID=`cat /var/run/postgresql/9.3-main.pid`
 kill -9 ${PID}
 echo "Postgres initialisation process completed .... restarting in foreground"
 exec su - postgres -c "$POSTGRES -D $DATADIR -c config_file=$CONF"
-
