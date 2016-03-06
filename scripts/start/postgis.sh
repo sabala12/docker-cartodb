@@ -2,7 +2,7 @@
 
 name="postgis"
 persistent_storage="/data/postgis"
-user_name="development"
+user_name="postgres"
 pass="no_more"
 database="carto_db_development"
 
