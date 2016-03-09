@@ -49,6 +49,31 @@ ADD auth-configuration.sh /home/auth-configuration.sh
 RUN chmod 0755 /home/auth-configuration.sh
 RUN service postgresql start && /home/auth-configuration.sh && \
     service postgresql stop
+
+# Create some users for cartodb app
+RUN service postgresql start && \ 
+    createuser publicuser --no-createrole --no-createdb --no-superuser -U postgres && \
+    createuser tileuser --no-createrole --no-createdb --no-superuser -U postgres && \
+    service postgresql stop
+
+# Install cartodb extension
+#RUN cd /home && git clone https://github.com/CartoDB/cartodb-postgresql
+#RUN cd /home/cartodb-postgresql && git fetch --tags \
+#    && export latestTag=$(git describe --tags `git rev-list --tags --max-count=1`) && echo $latestTag \
+#    && git checkout master
+#RUN service postgresql start && \
+#    cd /home/cartodb-postgresql && make all install && \
+#    service postgresql stop
+#
+#RUN service postgresql start && \
+#    createdb -T template0 -O postgres -U postgres -E UTF8 template_postgis && \
+##    createlang plpgsql -U postgres -d template_postgis && \
+#    psql -U postgres template_postgis -c 'CREATE EXTENSION postgis;CREATE EXTENSION postgis_topology;' && \
+#    ldconfig
+#
+#RUN cat /etc/postgresql/9.3/main/postgresql.conf
+#RUN service postgresql start && cd /home/cartodb-postgresql && PGUSER=postgres make installcheck && \
+#    service postgresql stop
 #---------------------------------------------------------------------------------------------
 
 ADD postgres.conf /etc/supervisor/conf.d/postgres.conf
@@ -57,21 +82,13 @@ ADD postgres.conf /etc/supervisor/conf.d/postgres.conf
 EXPOSE 5432
 
 #---------------------------Tedious Tasks--------------------------------------------------------
-# postgis defaults setup
-ADD postgis-defaults.sh /home/postgis-defaults.sh
-RUN chmod 0755 /home/postgis-defaults.sh
-
-# cartodb extensions
-ADD cartodb-extension.sh /home/cartodb-extension.sh
-RUN chmod 0755 /home/cartodb-extension.sh
-
-# schema triggers
-ADD schema-triggers.sh /home/schema-triggers.sh
-RUN chmod 0755 /home/schema-triggers.sh
-
 # carto-db psql setup
 ADD cartodb-setup.sh /home/cartodb-setup.sh
 RUN chmod 0755 /home/cartodb-setup.sh
+
+# carto-db postgres extension
+ADD cartodb-postgres-extension.sh /home/cartodb-postgres-extension.sh
+RUN chmod 0755 /home/cartodb-postgres-extension.sh
 #-------------------------------------------------------------------------------------------------
 
 # We will RUN any commands in this when the container starts

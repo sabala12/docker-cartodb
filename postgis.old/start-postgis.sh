@@ -7,6 +7,7 @@ DATADIR="/var/lib/postgresql/9.3/main"
 CONF="/etc/postgresql/9.3/main/postgresql.conf"
 POSTGRES="/usr/lib/postgresql/9.3/bin/postgres"
 INITDB="/usr/lib/postgresql/9.3/bin/initdb"
+SQLDIR="/usr/share/postgresql/9.3/contrib/postgis-2.1/"
 LOCALONLY="-c listen_addresses='127.0.0.1, ::1'"
 
 # /etc/ssl/private can't be accessed from within container for some reason
@@ -29,6 +30,14 @@ fi
 # needs to be done as root:
 chown -R postgres:postgres $DATADIR
 
+# Note that $POSTGRES_USER and $POSTGRES_PASS below are optional paramters that can be passed
+# via docker run e.g.
+#docker run --name="postgis" -e POSTGRES_USER=qgis -e POSTGRES_PASS=qgis -d -v 
+#/var/docker-data/postgres-dat:/var/lib/postgresql -t qgis/postgis:6
+
+# If you dont specify a user/password in docker run, we will generate one
+# here and create a user called 'docker' to go with it.
+
 # test if DATADIR has content
 if [ ! "$(ls -A $DATADIR)" ]; then
 
@@ -41,14 +50,21 @@ fi
 
 # Make sure we have a user set up
 if [ -z "$POSTGRES_USER" ]; then
-  echo "Missing user name!"
-  exit 0
+  POSTGRES_USER=docker
 fi  
 if [ -z "$POSTGRES_PASS" ]; then
-  echo "Missing password!"
-  exit 0
+  POSTGRES_PASS=docker
+fi  
+# Enable hstore and topology by default
+if [ -z "$HSTORE" ]; then
+  HSTORE=true
+fi  
+if [ -z "$TOPOLOGY" ]; then
+  TOPOLOGY=true
 fi  
 
+
+# redirect user/pass into a file so we can echo it into
 # docker logs when container starts
 # so that we can tell user their password
 echo "postgresql user: $POSTGRES_USER" > /tmp/PGPASSWORD.txt
@@ -73,29 +89,57 @@ su - postgres -c "source ~/.profile"
 # start postgres service
 service postgresql restart
 
+
 RESULT=`su - postgres -c "psql -l | grep postgis | wc -l"`
 if [[ ${RESULT} == '1' ]]
 then
     echo 'Postgis Already There'
+
+    if [[ ${HSTORE} == "true" ]]; then
+        echo 'HSTORE is only useful when you create the postgis database.'
+    fi
+    if [[ ${TOPOLOGY} == "true" ]]; then
+        echo 'TOPOLOGY is only useful when you create the postgis database.'
+    fi
 else
 
-    echo "postgis default setup"
-    su - postgres -c "/home/postgis-defaults.sh"
+    echo "Postgis is missing, installing now"
+    # Note the dockerfile must have put the postgis.sql and spatialrefsys.sql scripts into /root/
+    # We use template0 since we want t different encoding to template1
+    echo "Creating template postgis"
+    su - postgres -c "createdb template_postgis -E UTF8 -T template0"
+    echo "Enabling template_postgis as a template"
+    CMD="UPDATE pg_database SET datistemplate = TRUE WHERE datname = 'template_postgis';"
+    su - postgres -c "psql -c \"$CMD\""
+    echo "Loading postgis extension"
+    su - postgres -c "psql template_postgis -c 'CREATE EXTENSION postgis;'"
 
-    echo "postgres extensions"
-    /home/cartodb-extension.sh
+    if [[ ${HSTORE} == "true" ]]
+    then
+        echo "Enabling hstore in the template"
+        su - postgres -c "psql template_postgis -c 'CREATE EXTENSION hstore;'"
+    fi
+    if [[ ${TOPOLOGY} == "true" ]]
+    then
+        echo "Enabling topology in the template"
+        su - postgres -c "psql template_postgis -c 'CREATE EXTENSION postgis_topology;'"
+    fi
 
-    echo "schema triggers"
-    /home/schema-triggers.sh
+    # Needed when importing old dumps using e.g ndims for constraints
+    echo "Loading legacy sql"
+    su - postgres -c "psql template_postgis -f $SQLDIR/legacy_minimal.sql"
+    su - postgres -c "psql template_postgis -f $SQLDIR/legacy_gist.sql"
+    # Create a default db called 'gis' that you can use to get up and running quickly
+    # It will be owned by the docker db user
 
-    su - postgres -c "psql -d template_postgis -c 'GRANT ALL ON geometry_columns TO PUBLIC;'"
-    su - postgres -c "psql -d template_postgis -c 'GRANT ALL ON spatial_ref_sys TO PUBLIC;'"
+    # postgresql cartodb extension
+    /home/cartodb-postgres-extension.sh
 
-    echo "cartodb postgres extension setup"
+    # cartodb settings
     su - postgres -c "/home/cartodb-setup.sh"
 
-    echo "create user requested database"
-    su - postgres -c "createdb -U $POSTGRES_USER -O $POSTGRES_USER -T template_postgis $POSTGRES_DATABASE;"
+    su - postgres -c "createdb -O $POSTGRES_USER -T template_postgis $POSTGRES_DATABASE;"
+    #su - postgres -c "psql -c "grant all privileges on database $POSTGRES_DATABASE to $POSTGRES_USER;""
 fi
 
 # This should show up in docker logs afterwards
