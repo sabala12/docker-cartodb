@@ -77,6 +77,7 @@ RUN mkdir /home/installations
 RUN cd /home/installations/ && git clone --recursive git://github.com/CartoDB/cartodb.git
 ENV CARTODB_DIR /home/installations/cartodb
 #RUN cd $CARTODB_DIR && git submodule update --init --recursive
+RUN cd $CARTODB_DIR && git checkout 3.12.3
 
 RUN /bin/bash -l -c 'cd $CARTODB_DIR && RAILS_ENV=development bundle install'
 RUN cd $CARTODB_DIR && npm install

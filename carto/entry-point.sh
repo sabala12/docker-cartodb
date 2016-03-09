@@ -21,6 +21,7 @@ sed -i 's/SQL_API_PORT_8080_TCP_ADDR/'$SQL_API_PORT_8080_TCP_ADDR'/g' ./config/a
 /bin/bash
 
 RAILS_ENV=development bundle exec rake db:migrate
+RAILS_ENV=development bundle exec rake db:setup
 
 echo "creating setup user..."
 sh script/setup_user
