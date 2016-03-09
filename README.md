@@ -7,8 +7,4 @@ modified version kartoza/docker-postgis
 *******************************************
 postgis: postgresql with postgis extension.
 
-redis:
-
-sql-api:
-
-maps-api:
+Run ./scripts/start/postgis.sh and then ./scripts/deploy.sh
