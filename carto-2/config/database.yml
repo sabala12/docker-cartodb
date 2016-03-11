@@ -4,7 +4,7 @@ production:
   host: POSTGIS_PORT_5432_TCP_ADDR
   port: 5432
   database: carto_db_production
-  username: postgres
+  username: cartodb
   password:
   conn_validator_timeout: 900
 
@@ -14,7 +14,7 @@ staging:
   host: POSTGIS_PORT_5432_TCP_ADDR
   port: 5432
   database: carto_db_staging
-  username: postgres
+  username: cartodb
   password:
   conn_validator_timeout: 900
 
@@ -27,6 +27,7 @@ development:
   username: postgres
   password: no_more
   conn_validator_timeout: 900
+  pool: 50
 
 test:
   adapter: postgres
@@ -34,7 +35,6 @@ test:
   database: carto_db_test
   host: POSTGIS_PORT_5432_TCP_ADDR
   port: 5432  
-  username: postgres
+  username: cartodb
   password:
   conn_validator_timeout: -1
-

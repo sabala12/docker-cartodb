@@ -18,33 +18,35 @@ sed -i 's/SQL_API_PORT_8080_TCP_ADDR/'$SQL_API_PORT_8080_TCP_ADDR'/g' ./config/a
 
 ##################### Configure CartoDB ################################
 
-/bin/bash
+echo "Init metadata database"
+/bin/bash -l -c "cd $CARTODB_DIR && RAILS_ENV=development bundle exec rake db:migrate"
 
-RAILS_ENV=development bundle exec rake db:migrate
-RAILS_ENV=development bundle exec rake db:setup
+#echo "Setup admin user"
+#/bin/bash -l -c "$CARTODB_DIR/script/setup_user"
 
-echo "creating setup user..."
-sh script/setup_user
-echo "creating dev user..."]
-sh script/create_dev_user
+#echo "Start editor"
+#/bin/bash -l -c "RAILS_ENV=development bundle exec rails server &"
+
+#echo "Start resque process"
+#/bin/bash -l -c "RAILS_ENV=development bundle exec ./script/resque &"
 
 export CARTO_LOG=/var/log/cartodb
+export SUBDOMAIN=development
+
 mkdir $CARTO_LOG
 touch $CARTO_LOG/rails-server.log
 touch $CARTO_LOG/rails-server-error.log
 touch $CARTO_LOG/resque.log
+
 touch $CARTO_LOG/resque-error.log
-
-##################### Run CartoDB #######################################
-
-export SUBDOMAIN=development
-
-# Add entries to /etc/hosts needed in development
 echo "127.0.0.1 ${SUBDOMAIN}.localhost.lan" | sudo tee -a /etc/hosts
 
-RAILS_ENV=development bundle exec script/resque \
-    > $CARTO_LOG/rails-server.log 2> $CARTO_LOG/rails-server-error.log &
+/bin/bash -l -c "$CARTODB_DIR/script/create_dev_user"
 
-RAILS_ENV=development bundle exec thin start --threaded -p 3000 --threadpool-size 5 \
-    > $CARTO_LOG/resque.log 2> $CARTO_LOG/resque-error.log
+/bin/bash -l -c "bundle exec script/resque \
+    > $CARTO_LOG/rails-server.log 2> $CARTO_LOG/rails-server-error.log &"
 
+/bin/bash -l -c "bundle exec thin start --threaded -p 3000 --threadpool-size 5 \
+    > $CARTO_LOG/resque.log 2> $CARTO_LOG/resque-error.log"
+
+/bin/bash

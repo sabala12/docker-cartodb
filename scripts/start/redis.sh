@@ -1,7 +1,6 @@
 #!/bin/bash
 
-root="/path to redis parent dir/"
-user_name="panda"
-pass="itry2"
+user_name="development"
+pass="no_more"
 
-sudo docker run --name="redis" -d cartodb/redis:latest -v $persistent_storage -u $user_name -p $pass
+sudo docker run --name="redis" -p 6335:6335 -p 6379:6379 -it -d cartodb/redis:latest -v $persistent_storage -u $user_name -p $pass

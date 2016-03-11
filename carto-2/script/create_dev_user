@@ -1,8 +1,8 @@
 #!/bin/sh
 
 SUBDOMAIN="development"
-PASSWORD="cartodb3"
-ADMIN_PASSWORD="cartodb3"
+PASSWORD="no_more"
+ADMIN_PASSWORD="no_more"
 EMAIL="sabalah21gmail.com"
 
 echo "--- Creating dev user"

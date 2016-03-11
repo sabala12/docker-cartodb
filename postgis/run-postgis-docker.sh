@@ -29,7 +29,7 @@ test_connection()
     echo "database=$DATABASE"
     echo "password=$PGPASSWORD"
     sql_test="select case when true then 'true' end;"
-    sql_result=$(psql -h $IPADDRESS -U $PGUSER -d $DATABASE -c "$sql_test")
+    sql_result=$(psql -U $PGUSER -d $DATABASE -c "$sql_test")
     
     if [[ "$sql_result" =~ .*true.* ]]; then
         return 1
@@ -37,7 +37,7 @@ test_connection()
         echo "second shoot"
         sleep 10
         sudo docker exec ${CONTAINER_NAME} service postgresql restart
-        sql_result=$(psql -h $IPADDRESS -U $PGUSER -d $DATABASE -c "$sql_test")
+        sql_result=$(psql -U $PGUSER -d $DATABASE -c "$sql_test")
         if [[ "$sql_result" =~ .*false.* ]]; then
             return 0
         else
@@ -54,9 +54,6 @@ validate_and_exit()
         echo "failed to established connection to database ):"
     else
         echo "good to go (:"
-#echo "Connect using:"
-#echo "psql -l -p 5432 -h $IPADDRESS -U $PGUSER"
-#echo "and password $PGPASSWORD"
     fi
     exit 0
 }
@@ -88,11 +85,10 @@ do
 done
 
 export PGPASSWORD=$PGPASSWORD
-IPADDRESS=`docker inspect $CONTAINER_NAME | grep IPAddress | grep -o '[0-9\.]*'`
 RUNNING=$(docker inspect --format="{{ .State.Running }}" $CONTAINER_NAME 2> /dev/null)
-echo $RUNNING
 if [[ "$RUNNING" == "true" ]]; then
     echo "container $CONTAINER_NAME already running!"
+    IPADDRESS=`docker inspect $CONTAINER_NAME | grep IPAddress | grep -o '[0-9\.]*'`
     validate_and_exit
 fi
 
@@ -126,7 +122,7 @@ CMD="sudo docker run --name="${CONTAINER_NAME}" \
 	-e POSTGRES_PASS=${PGPASSWORD} \
         -e POSTGRES_DATABASE=${DATABASE} \
         -p 5432:5432 \
-	-it \
+	-it -d \
         ${VOLUME_OPTION} \
 	cartodb/postgis /start-postgis.sh"
 

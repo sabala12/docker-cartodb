@@ -2,7 +2,6 @@
 
 # This script will run as the postgres user due to the Dockerfile USER directive
 ldconfig
-
 DATADIR="/var/lib/postgresql/9.3/main"
 CONF="/etc/postgresql/9.3/main/postgresql.conf"
 POSTGRES="/usr/lib/postgresql/9.3/bin/postgres"
@@ -26,18 +25,16 @@ if [ ! -d $DATADIR ]; then
   echo "Creating Postgres data at $DATADIR"
   mkdir -p $DATADIR
 fi
-# needs to be done as root:
-chown -R postgres:postgres $DATADIR
 
 # test if DATADIR has content
 if [ ! "$(ls -A $DATADIR)" ]; then
-
-  # No content yet - first time pg is being run!
-  # Initialise db
   echo "Initializing Postgres Database at $DATADIR"
-  #chown -R postgres $DATADIR
-  su - postgres -c "$INITDB $DATADIR"
+  cp -r /tmp/postgres-backup/9.3/main/* $DATADIR/
 fi
+
+# cahange postgres data directory
+chown -R postgres:postgres $DATADIR
+chmod -R 700 $DATADIR
 
 # Make sure we have a user set up
 if [ -z "$POSTGRES_USER" ]; then
@@ -49,54 +46,14 @@ if [ -z "$POSTGRES_PASS" ]; then
   exit 0
 fi  
 
-# docker logs when container starts
-# so that we can tell user their password
-echo "postgresql user: $POSTGRES_USER" > /tmp/PGPASSWORD.txt
-echo "postgresql password: $POSTGRES_PASS" >> /tmp/PGPASSWORD.txt
-su - postgres -c "$POSTGRES --single -D $DATADIR -c config_file=$CONF <<< \"CREATE USER $POSTGRES_USER WITH SUPERUSER ENCRYPTED PASSWORD '$POSTGRES_PASS';\""
-
-trap "echo \"Sending SIGTERM to postgres\"; killall -s SIGTERM postgres" SIGTERM
-
-su - postgres -c "$POSTGRES -D $DATADIR -c config_file=$CONF $LOCALONLY &"
-
-# wait for postgres to come up
+service postgresql start
 until `nc -z 127.0.0.1 5432`; do
     echo "$(date) - waiting for postgres (localhost-only)..."
     sleep 1
 done
-echo "postgres ready"
 
-# set envs for user postgres
-su - postgres -c "echo 'export POSTGRES_DATABASE=$POSTGRES_DATABASE' >> ~/.profile"
-su - postgres -c "source ~/.profile"
-
-# start postgres service
-service postgresql restart
-
-RESULT=`su - postgres -c "psql -l | grep postgis | wc -l"`
-if [[ ${RESULT} == '1' ]]
-then
-    echo 'Postgis Already There'
-else
-
-    echo "postgis default setup"
-    su - postgres -c "/home/postgis-defaults.sh"
-
-    echo "postgres extensions"
-    /home/cartodb-extension.sh
-
-    echo "schema triggers"
-    /home/schema-triggers.sh
-
-    su - postgres -c "psql -d template_postgis -c 'GRANT ALL ON geometry_columns TO PUBLIC;'"
-    su - postgres -c "psql -d template_postgis -c 'GRANT ALL ON spatial_ref_sys TO PUBLIC;'"
-
-    echo "cartodb postgres extension setup"
-    su - postgres -c "/home/cartodb-setup.sh"
-
-    echo "create user requested database"
-    su - postgres -c "createdb -U $POSTGRES_USER -O $POSTGRES_USER -T template_postgis $POSTGRES_DATABASE;"
-fi
+echo "create user requested database"
+su - postgres -c "createdb -U $POSTGRES_USER -O $POSTGRES_USER -T template_postgis $POSTGRES_DATABASE;"
 
 # This should show up in docker logs afterwards
 su - postgres -c "psql -l"
@@ -105,3 +62,28 @@ PID=`cat /var/run/postgresql/9.3-main.pid`
 kill -9 ${PID}
 echo "Postgres initialisation process completed .... restarting in foreground"
 exec su - postgres -c "$POSTGRES -D $DATADIR -c config_file=$CONF"
+
+#echo "create users"
+#createuser publicuser --no-createrole --no-createdb --no-superuser -U postgres
+#createuser tileuser --no-createrole --no-createdb --no-superuser -U postgres
+#
+#echo "install cartodb extension"
+#cd /home
+#git clone https://github.com/CartoDB/cartodb-postgresql
+#cd cartodb-postgresql
+#git checkout 0.14.0
+#PGUSER=postgres make install
+#
+##............. some packages.................
+#
+#echo "setup configuration"
+#createdb -T template0 -O postgres -U postgres -E UTF8 template_postgis
+#createlang plpgsql -U postgres -d template_postgis
+#psql -U postgres template_postgis -c 'CREATE EXTENSION postgis;CREATE EXTENSION postgis_topology;'
+#ldconfig
+#
+#service postgresql restart
+#
+#echo "run tests..."
+#cd /home/cartodb-postgresql
+#PGUSER=postgres make installcheck

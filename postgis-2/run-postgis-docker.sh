@@ -128,10 +128,11 @@ CMD="sudo docker run --name="${CONTAINER_NAME}" \
         -p 5432:5432 \
 	-it \
         ${VOLUME_OPTION} \
-	cartodb/postgis:latest /start-postgis.sh"
+	cartodb/postgis /start-postgis.sh"
 
 echo $CMD
 eval $CMD
 
 IPADDRESS=`docker inspect $CONTAINER_NAME | grep IPAddress | grep -o '[0-9\.]*'`
+# wait for message from the container and exit...
 validate_and_exit

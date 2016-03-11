@@ -1,16 +1,21 @@
 defaults: &defaults
+  # If uncommented, most images like static map previews and twitter card image urls will use this CDN urls
+  #cdn_url:
+  #  http:             "http.cdn.host"
+  #  https:            "https.cdn.host"
+  http_client_logs: true
   ogr2ogr:
     binary:           'which ogr2ogr2'
     csv_guessing:     false
   debug_assets: true
   mandatory_keys:     [layer_opts, sql_api, varnish_management, redis, session_domain]
-  session_domain:     'cartodb.localhost'
+  session_domain:     '.localhost.lan'
   # If activated, urls will use usernames in format //SESSION_DOMAIN/user/USERNAME and ignore subdomains if present
-  subdomainless_urls: true
-  http_port:           # 3000 # nil|integer. HTTP port to use when building urls. Leave empty to use default (80)
+  subdomainless_urls: false
+  http_port:           3000 # nil|integer. HTTP port to use when building urls. Leave empty to use default (80)
   https_port:          # nil|integer. HTTPS port to use when building urls. Leave empty to use default (443)
   secret_token:       '71c2b25921b84a1cb21c71503ab8fb23'
-  account_host:       'cartodb.localhost:3000'
+  account_host:       'localhost.lan:3000'
   account_path:       '/account'
   data_library:
     username:         'common-data'
@@ -22,33 +27,33 @@ defaults: &defaults
     filter: 'mapnik'
     internal:
       protocol:      'http'
-      domain:        'cartodb.localhost'
+      domain:        'MAPS_API_PORT_8181_TCP_ADDR'
       port:          '8181'
       host:          '127.0.0.1'
       verifycert:     false
     private:
       protocol:      'http'
-      domain:        'cartodb.localhost'
-      port:          '80'
+      domain:        'MAPS_API_PORT_8181_TCP_ADDR'
+      port:          '8181'
       verifycert:     false
     public:
       protocol:      'http'
-      domain:        'cartodb.localhost'
-      port:          '80'
+      domain:        'MAPS_API_PORT_8181_TCP_ADDR'
+      port:          '8181'
       verifycert:     false
   sql_api:
     private:
       protocol:   'http'
-      domain:     'cartodb.localhost'
-      endpoint:   '/api/v2/sql'
-      port:       80
+      domain:     'SQL_API_PORT_8080_TCP_ADDR'
+      endpoint:   '/api/v1/sql'
+      port:       8080
     public:
       protocol:   'http'
-      domain:     'cartodb.localhost'
+      domain:     'SQL_API_PORT_8080_TCP_ADDR'
       endpoint:   '/api/v2/sql'
-      port:       80
+      port:       8080
   api_requests_service_url: ''
-  developers_host:    'http://developers.cartodb.localhost:3000'
+  developers_host:    'http://developers.localhost.lan:3000'
   google_analytics:
     primary:          ''
     embeds:           ''
@@ -101,7 +106,7 @@ defaults: &defaults
   common_data:
     protocol: 'https'
     username: 'common-data'
-    host: 'cartodb.com'
+    # base_url: 'https://common-data.cartodb.com'
     format: 'shp'
     generate_every: 86400
   explore_api:
@@ -166,12 +171,8 @@ defaults: &defaults
       base_url: ''
       api_key: ''
       table_name: ''
-    api:
-      host: 'cartodb.localhost'
-      port: '8787'
-      dbname: 'geocoder'
-      user: 'geocoder'
   importer:
+    blacklisted_ip_addr: []
     content_guessing:        # Depends on geocoding
       enabled:         false # Disabled if false or not present
       threshold:       0.9   # 90% or more matches
@@ -183,6 +184,9 @@ defaults: &defaults
       bucket_name:
       url_ttl:
       async_long_uploads: false
+      proxy_uri:
+      use_ssl: True
+
     unp_temporal_folder: '/tmp/imports/'
     # It must end in `/uploads` and be accessible via HTTP, if relative will default to Rails.Root/#{uploads_path}
     uploads_path: 'public/uploads'
@@ -201,7 +205,7 @@ defaults: &defaults
                   "user_name", "style_version", "tile_style", "query_wrapper"]
     default_tile_styles:
       point: "{\n  marker-fill: #FF6600;\n  marker-opacity: 0.9;\n  marker-width: 12;\n  marker-line-color: white;\n  marker-line-width: 3;\n  marker-line-opacity: 0.9;\n  marker-placement: point;\n  marker-type: ellipse;\n  marker-allow-overlap: true;\n}"
-      geometry: "{\n // points\n [mapnik-geometry-type=point] {\n    marker-fill: #FF6600;\n    marker-opacity: 1;\n    marker-width: 12;\n    marker-line-color: white;\n    marker-line-width: 3;\n    marker-line-opacity: 0.9;\n    marker-placement: point;\n    marker-type: ellipse;marker-allow-overlap: true;\n  }\n\n //lines\n [mapnik-geometry-type=linestring] {\n    line-color: #FF6600; \n    line-width: 2; \n    line-opacity: 0.7;\n  }\n\n //polygons\n [mapnik-geometry-type=polygon] {\n    polygon-fill:#FF6600;\n    polygon-opacity: 0.7;\n    line-opacity:1;\n    line-color: #FFFFFF;\n   }\n }"
+      geometry: "{\n // points\n [mapnik-geometry-type=point] {\n    marker-fill: #FF6600;\n    marker-opacity: 1;\n    marker-width: 12;\n    marker-line-color: white;\n    marker-line-width: 3;\n    marker-line-opacity: 0.9;\n    marker-placement: point;\n    marker-type: ellipse;marker-allow-overlap: true;\n  }\n\n //lines\n [mapnik-geometry-type=linestring] {\n    line-color: #FF6600; \n    line-width: 2; \n    line-opacity: 0.7;\n  }\n\n //polygons\n [mapnik-geometry-type=polygon] {\n    polygon-fill:#FF6600;\n    polygon-opacity: 0.7;\n    line-opacity:1;\n    line-color: #FFFFFF;\n   }\n }"
       polygon: "{\n  polygon-fill:#FF6600;\n  polygon-opacity: 0.7;\n  line-opacity:1;\n  line-color: #FFFFFF;\n}"
       multipolygon: "{\n  polygon-fill:#FF6600;\n  polygon-opacity: 0.7;\n  line-opacity:1;\n  line-color: #FFFFFF;\n}"
       multilinestring: "{\n  line-color:#FF6600;\n  line-width:1;\n  line-opacity: 0.7;\n}"
@@ -215,11 +219,11 @@ defaults: &defaults
         interactivity:      "cartodb_id"
         debug:              false
         visible:            true
-        tiler_domain:       "cartodb.localhost"
-        tiler_port:         "8181"
+        tiler_domain:       "localhost.lan"
+        tiler_port:         "80"
         tiler_protocol:     "http"
-        sql_domain:         "cartodb.localhost"
-        sql_port:           "8080"
+        sql_domain:         "localhost.lan"
+        sql_port:           "80"
         sql_protocol:       "http"
         extra_params:       { cache_policy: 'persist' }
         tile_style_history: []
@@ -229,22 +233,21 @@ defaults: &defaults
     background:
       kind: "background"
       options: { color: '#ffffff' }
-  cartodb_com_hosted: false
-  cartodb_central_domain_name: 'cartodb.localhost'
+  cartodb_com_hosted: true
+  cartodb_central_domain_name: 'cartodb.com'
   aws:
     s3:
       access_key_id: "test"
       secret_access_key: "test"
   assets:
-    # store assets locally instead of s3
-    # s3_bucket_name: "tests"
+    s3_bucket_name: "tests"
     max_file_size: 5242880 # 5.megabytes
   app_assets:
     asset_host: "//cartodb-libs.global.ssl.fastly.net/cartodbui"
   avatars:
-    base_url: 'cartodb-libs.global.ssl.fastly.net/cartodbui/assets/unversioned/images/avatars'
-    kinds: ['ghost', 'marker', 'mountain', 'pacman', 'planet', 'star']
-    colors: ['green', 'orange', 'red', 'yellow']
+    base_url: 'example.com/avatars'
+    kinds: ['stars', 'mountains']
+    colors: ['red', 'blue']
   dropbox_api_key: ""
   gdrive:
     api_key: ""
@@ -317,59 +320,43 @@ defaults: &defaults
             ratelimit_concurrency:  3
             ratelimit_ttl:          4
             ratelimit_wait_secs:    0.1
-  feature_flags:
-    ghost_tables:
-      restricted: true
-    rainbow_maps:
-      restricted: false
-  user_feature_flags:
-    rambo:    ['ghost_tables']
   basemaps:
-    Nokia:
-      normal_day:
-        url: 'https://maps.nlp.nokia.com/maptiler/v2/maptile/newest/normal.day/{z}/{x}/{y}/256/png8?lg=eng&token=A7tBPacePg9Mj_zghvKt9Q&app_id=KuYppsdXZznpffJsKT24'
-        minZoom: '0'
-        maxZoom: '21'
-        className:    "nokia_normal_day"
-        attribution:  "©2012 Nokia <a href='http://here.net/services/terms' target='_blank'>Terms of use</a>"
-        name: 'Nokia normal Day'
-      terrain_day:
-        url: 'https://maps.nlp.nokia.com/maptiler/v2/maptile/newest/terrain.day/{z}/{x}/{y}/256/png8?lg=eng&token=A7tBPacePg9Mj_zghvKt9Q&app_id=KuYppsdXZznpffJsKT24'
-        minZoom: '0'
-        maxZoom: '21'
-        className:    "nokia_terrain_day"
-        attribution:  "©2012 Nokia <a href='http://here.net/services/terms' target='_blank'>Terms of use</a>"
-        name: 'Nokia Terrain Day'
-      satellite_day:
-        url: 'https://maps.nlp.nokia.com/maptiler/v2/maptile/newest/satellite.day/{z}/{x}/{y}/256/png8?lg=eng&token=A7tBPacePg9Mj_zghvKt9Q&app_id=KuYppsdXZznpffJsKT24'
-        minZoom: '0'
-        maxZoom: '21'
-        className:    "nokia_satellite_day"
-        attribution:  "©2012 Nokia <a href='http://here.net/services/terms' target='_blank'>Terms of use</a>"
-        name: 'Nokia Satellite Day'
-      hybrid_day:
-        url: 'https://maps.nlp.nokia.com/maptiler/v2/maptile/newest/hybrid.day/{z}/{x}/{y}/256/png8?lg=eng&token=A7tBPacePg9Mj_zghvKt9Q&app_id=KuYppsdXZznpffJsKT24'
-        minZoom: '0'
-        maxZoom: '21'
-        className:    "nokia_hybrid_day"
-        attribution:  "©2012 Nokia <a href='http://here.net/services/terms' target='_blank'>Terms of use</a>"
-        name: 'Nokia hybrid Day'
     CartoDB:
-      positron_rainbow:
+      positron_rainbow_labels:
         default: true
-        url: 'http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
+        url: 'http://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png'
         subdomains: 'abcd'
         minZoom: '0'
         maxZoom: '18'
         name: 'Positron'
+        className: 'positron_rainbow_labels'
+        attribution: '© <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="http://cartodb.com/attributions#basemaps">CartoDB</a>'
+        labels:
+          url: 'http://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}.png'
+      dark_matter_rainbow_labels:
+        url: 'http://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png'
+        subdomains: 'abcd'
+        minZoom: '0'
+        maxZoom: '18'
+        name: 'Dark matter'
+        className: 'dark_matter_rainbow_labels'
+        attribution: '© <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="http://cartodb.com/attributions#basemaps">CartoDB</a>'
+        labels:
+          url: 'http://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}.png'
+      positron_rainbow:
+        url: 'http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
+        subdomains: 'abcd'
+        minZoom: '0'
+        maxZoom: '18'
+        name: 'Positron (labels below)'
         className: 'positron_rainbow'
-        attribution: '© <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href= "http://cartodb.com/attributions#basemaps">CartoDB</a>'
+        attribution: '© <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="http://cartodb.com/attributions#basemaps">CartoDB</a>'
       dark_matter_rainbow:
         url: 'http://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png'
         subdomains: 'abcd'
         minZoom: '0'
         maxZoom: '18'
-        name: 'Dark matter'
+        name: 'Dark matter (labels below)'
         className: 'dark_matter_rainbow'
         attribution: '© <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="http://cartodb.com/attributions#basemaps">CartoDB</a>'
       positron_lite_rainbow:
@@ -474,7 +461,7 @@ defaults: &defaults
 
 development:
   <<: *defaults
-  #http_port: 3000
+  http_port: 3000
   varnish_management:
     critical: false
     host: '127.0.0.1'
@@ -493,7 +480,7 @@ test:
     port: 6335
   enforce_non_empty_layer_css: false
   api_requests_es_service:
-    url: "http://api-calls-service.cartodb.localhost/search"
+    url: "http://api-calls-service.localhost.lan/search"
     body: ""
 
 staging:
