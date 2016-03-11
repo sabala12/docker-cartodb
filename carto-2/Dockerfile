@@ -11,91 +11,106 @@ ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
 ENV REDIS_PORT 6379
 
-RUN apt-key update && apt-get update
-RUN apt-get install -y software-properties-common python-software-properties
-RUN apt-get install -y htop vim sudo make git pkg-config
-RUN apt-get install -y python-setuptools python-simplejson python-all-dev
-RUN apt-get install -y libreadline6-dev openssl net-tools wget
-RUN apt-get install -y python-all-dev imagemagick unp zip libpq-dev libicu-dev
-RUN apt-get install -y gdal-bin libgdal1-dev libgdal-dev libgdal-dev python-gdal
-RUN add-apt-repository ppa:cartodb/gis && sudo apt-get update
-RUN apt-get install -y ogr2ogr2-static-bin 
-# Set gdal envs
+RUN apt-get update && \
+    apt-get install -y \
+    software-properties-common \
+    python-software-properties
+
+RUN useradd -m -d /home/cartodb -s /bin/bash cartodb && \
+    apt-key update apt-get update && \
+    add-apt-repository -y ppa:cartodb/gis && \
+    add-apt-repository -y ppa:cartodb/postgresql-9.3 && \
+    add-apt-repository ppa:ubuntu-toolchain-r/test
+
+RUN apt-get update && \
+    apt-get install -y \
+    python-setuptools \
+    python-simplejson \ 
+    python-all-dev \
+    python-all-dev \
+    htop git openssl net-tools wget \
+    vim sudo make unp zip \
+    pkg-config \
+    libreadline6-dev \
+    imagemagick \
+    libpq-dev libicu-dev \
+    gdal-bin python-gdal \
+    libgdal-dev libgdal1-dev libpango1.0-dev
+
+# ogr2ogr2 static build, see https://github.com/CartoDB/cartodb/wiki/How-to-build-gdal-and-ogr2ogr2
+RUN cd /opt && git clone https://github.com/OSGeo/gdal ogr2ogr2 && cd ogr2ogr2 && \
+git remote add cartodb https://github.com/cartodb/gdal && git fetch cartodb && \
+git checkout trunk && git pull origin trunk && \
+git checkout upstream && git merge --ff-only origin/trunk && \
+git config --global user.email "you@example.com" && \
+git config --global user.name "Your Name" && \
+git checkout ogr2ogr2 && git merge upstream -m "Merged it" && \
+cd ogr2ogr2 && ./configure --disable-shared && make -j 4 && \
+cp apps/ogr2ogr /usr/bin/ogr2ogr2 && rm -rf /opt/ogr2ogr2 /root/.gitconfig
+
+# set gdal envs
 ENV CPLUS_INCLUDE_PATH $CPLUS_INCLUDE_PATH:/usr/include/gdal
 ENV C_INCLUDE_PATH $C_INCLUDE_PATH:/usr/include/gdal
 ENV PATH $PATH:/usr/include/gdal
 
-RUN useradd -m -d /home/cartodb -s /bin/bash cartodb && \
-    apt-get install -y software-properties-common && \
-    add-apt-repository -y ppa:cartodb/gis && \
-    add-apt-repository -y ppa:cartodb/postgresql-9.3 && \
-    add-apt-repository ppa:cartodb/nodejs-010 && \
-    apt-get update
-
-RUN apt-get install -y nodejs
-
-# Update gcc
-RUN add-apt-repository ppa:ubuntu-toolchain-r/test
-RUN apt-get update
+# update gcc
 RUN apt-get install -y gcc-4.9 g++-4.9
 RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 50 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
 
-ENV RUBY_VERSION 0.5.0
-#RUN cd /home && \
-#    wget -O ruby-install-$RUBY_VERSION.tar.gz https://github.com/postmodern/ruby-install/archive/v$RUBY_VERSION.tar.gz
-#RUN cd /home && tar -xzvf ruby-install-$RUBY_VERSION.tar.gz
-#RUN cd /home/ruby-install-$RUBY_VERSION && make install
-#RUN ruby-install ruby 2.2.3
-#ENV PATH $PATH:/opt/rubies/ruby-2.2.3/bin/
+# Install NodeJS
+RUN curl https://nodejs.org/download/release/v0.10.41/node-v0.10.41-linux-x64.tar.gz| tar -zxf - --strip-components=1 -C /usr
 
-# Install bundler & compass
-#RUN gem install bundler
-#RUN gem install compass
-
-ENV RUBY_VERSION 2.2.3
-ENV RAILS_VERSION 0.5.0
-RUN gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3
-RUN apt-get install -y curl
-RUN curl -sSL https://get.rvm.io | bash -s stable --rails
+# Install rvm
+RUN gpg --keyserver hkp://keys.gnupg.net --recv-keys D39DC0E3
+RUN curl -L https://get.rvm.io | bash -s stable --ruby
 RUN echo 'source /usr/local/rvm/scripts/rvm' >> /etc/bash.bashrc
 RUN /bin/bash -l -c rvm requirements
 ENV PATH /usr/local/rvm/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-RUN /bin/bash -l -c 'rvm install $RUBY_VERSION'
-RUN /bin/bash -l -c 'rvm use $RUBY_VERSION --default'
+RUN echo rvm_max_time_flag=15 >> ~/.rvmrc
+RUN /bin/bash -l -c 'rvm install 2.2.3'
+RUN /bin/bash -l -c 'rvm use 2.2.3 --default'
 RUN /bin/bash -l -c 'gem install bundle archive-tar-minitar'
-RUN /bin/bash -l -c 'gem install bundler'
-RUN /bin/bash -l -c 'gem install compass'
-#RUN /bin/bash -l -c 'gem install rails -v $RAILS_VERSION'
+
+# Install bundler
+RUN /bin/bash -l -c 'gem install bundler --no-doc --no-ri'
 
 # Install pip
 RUN wget -O /tmp/get-pip.py https://bootstrap.pypa.io/get-pip.py
 RUN python /tmp/get-pip.py
 RUN pip install mapnik
 
-# Install Cartodb
-RUN mkdir /home/installations
-RUN cd /home/installations/ && git clone --recursive git://github.com/CartoDB/cartodb.git
-ENV CARTODB_DIR /home/installations/cartodb
-#RUN cd $CARTODB_DIR && git submodule update --init --recursive
-RUN cd $CARTODB_DIR && git checkout master
+# Install CartoDB API
+RUN git clone git://github.com/CartoDB/CartoDB-SQL-API.git && \
+      cd CartoDB-SQL-API && ./configure && npm install
 
-RUN /bin/bash -l -c 'cd $CARTODB_DIR && RAILS_ENV=development bundle install'
-RUN cd $CARTODB_DIR && npm install
-RUN apt-get install -y libgdal-dev libgdal1h
-RUN cd $CARTODB_DIR && pip install --no-use-wheel -r python_requirements.txt
-ENV PATH $PATH:$CARTODB_DIR/node_modules/grunt-cli/bin
-RUN /bin/bash -l -c 'cd $CARTODB_DIR && bundle install'
-RUN /bin/bash -l -c 'cd $CARTODB_DIR && bundle exec grunt --environment development'
+# Install Windshaft
+RUN git clone git://github.com/CartoDB/Windshaft-cartodb.git && \
+      cd Windshaft-cartodb && ./configure && npm install && mkdir logs
 
-ADD ./config/app_config.yml $CARTODB_DIR/config/app_config.yml
-ADD ./config/database.yml $CARTODB_DIR/config/database.yml
-ADD ./script/setup_user $CARTODB_DIR/script/setup_user
-ADD ./script/create_dev_user $CARTODB_DIR/script/create_dev_user
-RUN chmod +x $CARTODB_DIR/script/create_dev_user
-RUN chmod +x $CARTODB_DIR/script/setup_user
+# Install CartoDB (with the bug correction on bundle install)
+RUN git clone git://github.com/CartoDB/cartodb.git && \
+      cd cartodb && /bin/bash -l -c 'bundle install' || \
+      /bin/bash -l -c "cd $(/bin/bash -l -c 'gem contents \
+            debugger-ruby_core_source' | grep CHANGELOG | sed -e \
+            's,CHANGELOG.md,,') && /bin/bash -l -c 'rake add_source \
+            VERSION=$(/bin/bash -l -c 'ruby --version' | awk \
+            '{print $2}' | sed -e 's,p55,-p55,' )' && cd /cartodb && \
+            /bin/bash -l -c 'bundle install'"
 
-EXPOSE 3000
+ENV PATH $PATH:/cartodb/node_modules/grunt-cli/bin
+RUN cd cartodb && bundle exec grunt --environment development
 
-COPY entry-point.sh /home/
-RUN chmod 754 /home/entry-point.sh
-ENTRYPOINT ["/home/entry-point.sh"]
+ADD ./config/app_config.yml /cartodb/config/app_config.yml
+ADD ./config/database.yml /cartodb/config/database.yml
+ADD ./script/setup_user /cartodb/script/setup_user
+ADD ./script/create_dev_user /cartodb/script/create_dev_user
+RUN chmod +x /cartodb/script/create_dev_user
+RUN chmod +x /cartodb/script/setup_user
+
+ENV PATH /usr/local/rvm/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+EXPOSE 3000 8080 8181
+
+ADD ./startup.sh /opt/startup.sh
+
+CMD ["/bin/bash", "/opt/startup.sh"]

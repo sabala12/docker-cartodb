@@ -62,28 +62,3 @@ PID=`cat /var/run/postgresql/9.3-main.pid`
 kill -9 ${PID}
 echo "Postgres initialisation process completed .... restarting in foreground"
 exec su - postgres -c "$POSTGRES -D $DATADIR -c config_file=$CONF"
-
-#echo "create users"
-#createuser publicuser --no-createrole --no-createdb --no-superuser -U postgres
-#createuser tileuser --no-createrole --no-createdb --no-superuser -U postgres
-#
-#echo "install cartodb extension"
-#cd /home
-#git clone https://github.com/CartoDB/cartodb-postgresql
-#cd cartodb-postgresql
-#git checkout 0.14.0
-#PGUSER=postgres make install
-#
-##............. some packages.................
-#
-#echo "setup configuration"
-#createdb -T template0 -O postgres -U postgres -E UTF8 template_postgis
-#createlang plpgsql -U postgres -d template_postgis
-#psql -U postgres template_postgis -c 'CREATE EXTENSION postgis;CREATE EXTENSION postgis_topology;'
-#ldconfig
-#
-#service postgresql restart
-#
-#echo "run tests..."
-#cd /home/cartodb-postgresql
-#PGUSER=postgres make installcheck
