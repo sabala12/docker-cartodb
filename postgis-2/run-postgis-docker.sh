@@ -34,15 +34,7 @@ test_connection()
     if [[ "$sql_result" =~ .*true.* ]]; then
         return 1
     else
-        echo "second shoot"
-        sleep 10
-        sudo docker exec ${CONTAINER_NAME} service postgresql restart
-        sql_result=$(psql -U $PGUSER -d $DATABASE -c "$sql_test")
-        if [[ "$sql_result" =~ .*false.* ]]; then
-            return 0
-        else
-            return 1
-        fi
+        return 0
     fi
 }
 
@@ -54,13 +46,35 @@ validate_and_exit()
         echo "failed to established connection to database ):"
     else
         echo "good to go (:"
-#echo "Connect using:"
-#echo "psql -l -p 5432 -h $IPADDRESS -U $PGUSER"
-#echo "and password $PGPASSWORD"
     fi
     exit 0
 }
 
+make_pipe()
+{
+    trap "rm -f $1" EXIT
+
+    if [[ ! -p $1 ]]; then
+            mkfifo $1
+    fi
+}
+
+wait_for_container()
+{
+    echo "listen to pipe=$container_pipe"
+    while read line <$container_pipe
+    do
+        if [[ "$line" == 'postgres_up' ]]; then
+                break
+        else
+                echo "unknown message $line"
+        fi
+    done
+
+    sleep 1
+    sudo docker exec ${CONTAINER_NAME} service postgresql restart
+    echo "1" >$pipe
+}
 
 while getopts ":h:n:v:u:p:d:" OPTION
 do
@@ -89,7 +103,7 @@ done
 
 export PGPASSWORD=$PGPASSWORD
 RUNNING=$(docker inspect --format="{{ .State.Running }}" $CONTAINER_NAME 2> /dev/null)
-echo $RUNNING
+
 if [[ "$RUNNING" == "true" ]]; then
     echo "container $CONTAINER_NAME already running!"
     IPADDRESS=`docker inspect $CONTAINER_NAME | grep IPAddress | grep -o '[0-9\.]*'`
@@ -110,7 +124,8 @@ if [[ ! -z $VOLUME ]]
 then
     VOLUME_OPTION="-v ${VOLUME}:/var/lib/postgresql"
 else
-    VOLUME_OPTION=""
+    echo "missing VOLUME option!"
+    exit 1
 fi
 
 if [ ! -d $VOLUME ]
@@ -118,6 +133,14 @@ then
     mkdir $VOLUME
 fi
 chmod a+w $VOLUME
+
+pipe=/tmp/script_sock
+container_pipe=${VOLUME}/container_sock
+make_pipe $pipe
+make_pipe $container_pipe
+
+wait_for_container &
+sleep 1
 
 CMD="sudo docker run --name="${CONTAINER_NAME}" \
         --hostname="${CONTAINER_NAME}" \
@@ -133,6 +156,13 @@ CMD="sudo docker run --name="${CONTAINER_NAME}" \
 echo $CMD
 eval $CMD
 
-IPADDRESS=`docker inspect $CONTAINER_NAME | grep IPAddress | grep -o '[0-9\.]*'`
-# wait for message from the container and exit...
-validate_and_exit
+echo "listen to pipe=$pipe"
+while read line <$pipe
+do
+    sleep 1
+    if [[ "$line" == '1' ]]; then
+        echo "good to go (:"
+        break
+    fi
+    echo "unknown replay $line"
+done

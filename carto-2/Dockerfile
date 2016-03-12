@@ -27,7 +27,6 @@ RUN apt-get update && \
     python-setuptools \
     python-simplejson \ 
     python-all-dev \
-    python-all-dev \
     htop git openssl net-tools wget \
     vim sudo make unp zip \
     pkg-config \
@@ -53,6 +52,11 @@ ENV CPLUS_INCLUDE_PATH $CPLUS_INCLUDE_PATH:/usr/include/gdal
 ENV C_INCLUDE_PATH $C_INCLUDE_PATH:/usr/include/gdal
 ENV PATH $PATH:/usr/include/gdal
 
+# Install pip
+RUN wget -O /tmp/get-pip.py https://bootstrap.pypa.io/get-pip.py
+RUN python /tmp/get-pip.py
+RUN pip install mapnik
+
 # update gcc
 RUN apt-get install -y gcc-4.9 g++-4.9
 RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 50 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
@@ -75,11 +79,6 @@ RUN /bin/bash -l -c 'gem install bundle archive-tar-minitar'
 # Install bundler
 RUN /bin/bash -l -c 'gem install bundler --no-doc --no-ri'
 
-# Install pip
-RUN wget -O /tmp/get-pip.py https://bootstrap.pypa.io/get-pip.py
-RUN python /tmp/get-pip.py
-RUN pip install mapnik
-
 # Install CartoDB API
 RUN git clone git://github.com/CartoDB/CartoDB-SQL-API.git && \
       cd CartoDB-SQL-API && ./configure && npm install
@@ -89,17 +88,13 @@ RUN git clone git://github.com/CartoDB/Windshaft-cartodb.git && \
       cd Windshaft-cartodb && ./configure && npm install && mkdir logs
 
 # Install CartoDB (with the bug correction on bundle install)
-RUN git clone git://github.com/CartoDB/cartodb.git && \
-      cd cartodb && /bin/bash -l -c 'bundle install' || \
-      /bin/bash -l -c "cd $(/bin/bash -l -c 'gem contents \
-            debugger-ruby_core_source' | grep CHANGELOG | sed -e \
-            's,CHANGELOG.md,,') && /bin/bash -l -c 'rake add_source \
-            VERSION=$(/bin/bash -l -c 'ruby --version' | awk \
-            '{print $2}' | sed -e 's,p55,-p55,' )' && cd /cartodb && \
-            /bin/bash -l -c 'bundle install'"
-
+RUN git clone --recursive git://github.com/CartoDB/cartodb.git
+RUN cd /cartodb && /bin/bash -l -c "RAILS_ENV=development bundle install"
+RUN cd /cartodb && npm install
+RUN cd /cartodb && pip install --no-use-wheel -r python_requirements.txt
 ENV PATH $PATH:/cartodb/node_modules/grunt-cli/bin
-RUN cd cartodb && bundle exec grunt --environment development
+RUN cd /cartodb && /bin/bash -l -c "bundle install"
+RUN cd /cartodb && /bin/bash -l -c "bundle exec grunt --environment development"
 
 ADD ./config/app_config.yml /cartodb/config/app_config.yml
 ADD ./config/database.yml /cartodb/config/database.yml
@@ -107,8 +102,6 @@ ADD ./script/setup_user /cartodb/script/setup_user
 ADD ./script/create_dev_user /cartodb/script/create_dev_user
 RUN chmod +x /cartodb/script/create_dev_user
 RUN chmod +x /cartodb/script/setup_user
-
-ENV PATH /usr/local/rvm/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 EXPOSE 3000 8080 8181
 

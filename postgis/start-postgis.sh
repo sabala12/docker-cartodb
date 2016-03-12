@@ -58,6 +58,8 @@ su - postgres -c "createdb -U $POSTGRES_USER -O $POSTGRES_USER -T template_postg
 # This should show up in docker logs afterwards
 su - postgres -c "psql -l"
 
+echo "postgres_up" >/var/lib/postgresql/sock
+
 PID=`cat /var/run/postgresql/9.3-main.pid`
 kill -9 ${PID}
 echo "Postgres initialisation process completed .... restarting in foreground"
