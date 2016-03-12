@@ -84,8 +84,10 @@ ADD ./cartodb_pgsql.sh /tmp/cartodb_pgsql.sh
 RUN service postgresql start && /bin/su postgres -c \
       /tmp/cartodb_pgsql.sh && service postgresql stop
 
-RUN cd /cartodb-postgresql && \
-    PGUSER=postgres make installcheck
+RUN service postgresql start && \
+    cd /cartodb-postgresql && \
+    PGUSER=postgres make installcheck && \
+    service postgresql stop
 #---------------------------------------------------------------------------------------------
 # Copy all postgresql data becuase of volume initialization
 RUN mkdir /tmp/postgres-backup 

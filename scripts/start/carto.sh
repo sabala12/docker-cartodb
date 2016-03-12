@@ -6,7 +6,7 @@ CMD="sudo docker run --name="carto" \
     --link redis:redis --link postgis:postgis \
     -p 3000:3000 \
     -it \
-    cartodb/cartodb:latest"
+    cartodb/cartodb2:latest"
 
 echo 'Running cartodb'
 echo $CMD

@@ -29,7 +29,7 @@ test_connection()
     echo "database=$DATABASE"
     echo "password=$PGPASSWORD"
     sql_test="select case when true then 'true' end;"
-    sql_result=$(psql -h $IPADDRESS -U $PGUSER -d $DATABASE -c "$sql_test")
+    sql_result=$(psql -U $PGUSER -d $DATABASE -c "$sql_test")
     
     if [[ "$sql_result" =~ .*true.* ]]; then
         return 1
@@ -37,7 +37,7 @@ test_connection()
         echo "second shoot"
         sleep 10
         sudo docker exec ${CONTAINER_NAME} service postgresql restart
-        sql_result=$(psql -h $IPADDRESS -U $PGUSER -d $DATABASE -c "$sql_test")
+        sql_result=$(psql -U $PGUSER -d $DATABASE -c "$sql_test")
         if [[ "$sql_result" =~ .*false.* ]]; then
             return 0
         else
@@ -88,11 +88,11 @@ do
 done
 
 export PGPASSWORD=$PGPASSWORD
-IPADDRESS=`docker inspect $CONTAINER_NAME | grep IPAddress | grep -o '[0-9\.]*'`
 RUNNING=$(docker inspect --format="{{ .State.Running }}" $CONTAINER_NAME 2> /dev/null)
 echo $RUNNING
 if [[ "$RUNNING" == "true" ]]; then
     echo "container $CONTAINER_NAME already running!"
+    IPADDRESS=`docker inspect $CONTAINER_NAME | grep IPAddress | grep -o '[0-9\.]*'`
     validate_and_exit
 fi
 
@@ -128,7 +128,7 @@ CMD="sudo docker run --name="${CONTAINER_NAME}" \
         -p 5432:5432 \
 	-it \
         ${VOLUME_OPTION} \
-	cartodb/postgis /start-postgis.sh"
+	cartodb/postgis2:latest /start-postgis.sh"
 
 echo $CMD
 eval $CMD
