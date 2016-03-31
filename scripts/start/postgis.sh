@@ -6,4 +6,4 @@ user_name="postgres"
 pass="no_more"
 database="carto_db_development"
 
-sudo ~/Projects/carto-db/postgis-2/run-postgis-docker.sh -n $name -v $persistent_storage -u $user_name -p $pass -d $database
+sudo ~/Projects/carto-db/postgis/run-postgis-docker.sh -n $name -v $persistent_storage -u $user_name -p $pass

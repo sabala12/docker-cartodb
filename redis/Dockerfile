@@ -12,7 +12,6 @@ RUN apt-get install -y redis-server
 EXPOSE 6379
 EXPOSE 6335
 
-ADD entry-point.sh /home/
-RUN chmod 754 /home/entry-point.sh
-RUN ls /home
-ENTRYPOINT ["/home/entry-point.sh"]
+ADD start.sh /opt/start.sh
+
+CMD ["/bin/bash", "/opt/start.sh"]

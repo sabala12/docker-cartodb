@@ -1,10 +1,6 @@
 =======
-# Docker CartoDB
-Docker configuration for CartoDB 
+# CartoDB
 
-*******************************************
-modified version kartoza/docker-postgis
-*******************************************
-postgis: postgresql with postgis extension.
+Docker configuration for CartoDB.
 
-Run ./scripts/start/postgis.sh and then ./scripts/deploy.sh
+Containers: postgres, redis, cartodb

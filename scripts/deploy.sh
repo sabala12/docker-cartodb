@@ -1,7 +1,7 @@
 #!/bin/bash
 
 root=$(dirname $0)
-CONTAINERS=("redis" "carto")
+CONTAINERS=("carto")
 #CONTAINERS=("redis" "postgis" "carto")
 
 $root"/kill_all.sh"

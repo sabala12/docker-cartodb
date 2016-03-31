@@ -52,13 +52,16 @@ until `nc -z 127.0.0.1 5432`; do
     sleep 1
 done
 
-echo "create user requested database"
-su - postgres -c "createdb -U $POSTGRES_USER -O $POSTGRES_USER -T template_postgis $POSTGRES_DATABASE;"
+if [ "$POSTGRES_DATABASE" ]; then
+    echo "creating requested database out of postgis template"
+    su - postgres -c "createdb -U $POSTGRES_USER -O $POSTGRES_USER -T template_postgis $POSTGRES_DATABASE;"
+fi
 
 # This should show up in docker logs afterwards
 su - postgres -c "psql -l"
 
-echo "postgres_up" >/var/lib/postgresql/sock
+# signal job is done
+echo "postgres_up" >/var/lib/postgresql/container_sock
 
 PID=`cat /var/run/postgresql/9.3-main.pid`
 kill -9 ${PID}

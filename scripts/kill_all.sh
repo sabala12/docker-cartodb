@@ -1,8 +1,7 @@
 #!/bin/bash
 
 root=$(dirname $0)
-#CONTAINERS=("carto")
-CONTAINERS=("redis" "carto")
+CONTAINERS=("carto")
 
 for container in ${CONTAINERS[@]}; do
     

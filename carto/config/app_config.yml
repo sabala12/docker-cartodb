@@ -172,6 +172,7 @@ defaults: &defaults
       dbname: 'geocoder'
       user: 'geocoder'
   importer:
+    blacklisted_ip_addr: []
     content_guessing:        # Depends on geocoding
       enabled:         false # Disabled if false or not present
       threshold:       0.9   # 90% or more matches
@@ -240,7 +241,7 @@ defaults: &defaults
     # s3_bucket_name: "tests"
     max_file_size: 5242880 # 5.megabytes
   app_assets:
-    asset_host: "//cartodb-libs.global.ssl.fastly.net/cartodbui"
+    asset_host: "//development.localhost.lan:3000"
   avatars:
     base_url: 'cartodb-libs.global.ssl.fastly.net/cartodbui/assets/unversioned/images/avatars'
     kinds: ['ghost', 'marker', 'mountain', 'pacman', 'planet', 'star']
@@ -484,6 +485,9 @@ development:
     retries: 5
     timeout: 5
   enforce_non_empty_layer_css: false
+  redis:
+    host: 'REDIS_PORT_6335_TCP_ADDR'
+    port: 6379
 
 test:
   <<: *defaults

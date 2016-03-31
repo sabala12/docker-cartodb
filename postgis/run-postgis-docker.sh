@@ -23,13 +23,14 @@ EOF
 
 test_connection()
 {
-    echo "trying to estabish connection..."
+    IPADDRESS=`docker inspect $CONTAINER_NAME | grep IPAddress | grep -o '[0-9\.]*'`
     echo "ip=$IPADDRESS"
     echo "user=$PGUSER"
     echo "database=$DATABASE"
     echo "password=$PGPASSWORD"
     sql_test="select case when true then 'true' end;"
-    sql_result=$(psql -U $PGUSER -d $DATABASE -c "$sql_test")
+    echo "trying to estabish connection..."
+    sql_result=$(psql -U $PGUSER -d $DATABASE -h $IPADDRESS -c "$sql_test")
     
     if [[ "$sql_result" =~ .*true.* ]]; then
         return 1
@@ -105,7 +106,6 @@ export PGPASSWORD=$PGPASSWORD
 RUNNING=$(docker inspect --format="{{ .State.Running }}" $CONTAINER_NAME 2> /dev/null)
 if [[ "$RUNNING" == "true" ]]; then
     echo "container $CONTAINER_NAME already running!"
-    IPADDRESS=`docker inspect $CONTAINER_NAME | grep IPAddress | grep -o '[0-9\.]*'`
     validate_and_exit
 fi
 
@@ -150,7 +150,7 @@ CMD="sudo docker run --name="${CONTAINER_NAME}" \
         -p 5432:5432 \
 	-it \
         ${VOLUME_OPTION} \
-	cartodb/postgis /start-postgis.sh"
+	cartodb/postgis:latest /start-postgis.sh"
 
 echo $CMD
 eval $CMD

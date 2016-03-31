@@ -1,12 +1,12 @@
 #!/bin/sh
 
-SUBDOMAIN="development"
-PASSWORD="no_more"
-ADMIN_PASSWORD="no_more"
-EMAIL="sabalah21@gmail.com"
+SUBDOMAIN="dev"
+PASSWORD="pass1234"
+ADMIN_PASSWORD="pass1234"
+EMAIL="dev@example.com"
 
 echo "--- Creating databases"
-bundle exec rake cartodb:db:setup SUBDOMAIN="${SUBDOMAIN}" \
+bundle exec rake cartodb:db:setup --trace SUBDOMAIN="${SUBDOMAIN}" \
 	PASSWORD="${PASSWORD}" ADMIN_PASSWORD="${ADMIN_PASSWORD}" \
 	EMAIL="${EMAIL}"
 if test $? -ne 0; then exit 1; fi
