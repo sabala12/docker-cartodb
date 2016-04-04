@@ -114,5 +114,3 @@ ADD start-postgis.sh /start-postgis.sh
 RUN chmod 0755 /start-postgis.sh
 
 CMD /start-postgis.sh
-
-

@@ -68,7 +68,10 @@ RUN apt-get update && \
     libgif-dev \
     pgtune \
     libgmp-dev \
-    libicu-dev
+    libicu-dev \
+    postgresql-client \
+    varnish \
+    vim
 
 # GIS dependencies
 RUN apt-get install -y proj proj-bin proj-data libproj-dev
@@ -118,25 +121,20 @@ RUN cd /tmp && \
     python /tmp/get-pip.py
 
 # Install CartoDB app
-#RUN git clone --recursive https://github.com/CartoDB/cartodb.git
 RUN git clone --recursive https://github.com/CartoDB/cartodb20.git
 RUN sed -i 's/jwt (1.5.3)/jwt (1.5.4)/g' /cartodb20/Gemfile.lock
-RUN cd cartodb20 && \
+RUN cd /cartodb20 && \
     RAILS_ENV=development bundle install && \
     npm install && \
     pip install --no-use-wheel -r python_requirements.txt
 
-ENV PATH $PATH:/cartodb/node_modules/grunt-cli/bin
+ENV PATH $PATH:/cartodb20/node_modules/grunt-cli/bin
 RUN npm install -g grunt-cli
 RUN cd /cartodb20 && \
     npm install grunt --save-dev && \
-#    bundle install && \
     bundle exec grunt --environment development && \
     cp config/app_config.yml.sample config/app_config.yml && \
     cp config/database.yml.sample config/database.yml
-
-RUN apt-get install -y varnish
-RUN apt-get install -y vim
 
 ENV REDIS_PORT 6379
 
