@@ -142,6 +142,7 @@ wait_for_container &
 sleep 1
 
 CMD="sudo docker run --name="${CONTAINER_NAME}" \
+        ${VOLUME_OPTION} \
         --hostname="${CONTAINER_NAME}" \
         --restart=always \
 	-e POSTGRES_USER=${PGUSER} \
@@ -149,10 +150,8 @@ CMD="sudo docker run --name="${CONTAINER_NAME}" \
         -e POSTGRES_DATABASE=${DATABASE} \
         -p 5432:5432 \
 	-it \
-        ${VOLUME_OPTION} \
 	cartodb/postgis:latest /start-postgis.sh"
 
-echo $CMD
 eval $CMD
 
 echo "listen to pipe=$pipe"

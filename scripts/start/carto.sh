@@ -1,14 +1,25 @@
 #!/bin/bash
 
-CMD="sudo docker run --name="carto" \
-    --link postgis:postgis \
-    --link redis:redis \
-    -p 3000:3000 \
-    -p 8080:8080 \
-    -p 8181:8181 \
-    -it \
-    cartodb/cartodb:latest"
+container_name="carto"
+persistent_storage="/data/cartodb"
+user_name="development"
+password="277336"
+redis_ip=$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' redis)
+postgis_ip=$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' postgis)
+postgis_pass=475909
 
-echo 'Running cartodb'
-echo $CMD
-eval $CMD
+if [[ -z $redis_ip ]]; then
+    echo "no redis ip!"; exit 0
+fi
+
+if [[ -z $postgis_ip ]]; then
+    echo "no postgis ip!"; exit 0
+fi
+
+sudo ~/Projects/carto-db/carto/run-cartodb.sh -n $container_name \
+                                              -v $persistent_storage \
+                                              -u $user_name \
+                                              -p $password \
+                                              -a $redis_ip \
+                                              -b $postgis_ip \
+                                              -c $postgis_pass

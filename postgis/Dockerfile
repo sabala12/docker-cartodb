@@ -85,8 +85,8 @@ RUN service postgresql start && \
 
 # Install cartodb extension
 RUN git clone https://github.com/CartoDB/cartodb-postgresql && \
-      cd cartodb-postgresql && \
-      PGUSER=postgres make install
+    cd cartodb-postgresql && \
+    PGUSER=postgres make install
 
 # Install schema_triggers
 RUN git clone https://github.com/CartoDB/pg_schema_triggers.git && \

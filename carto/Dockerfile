@@ -97,7 +97,7 @@ ENV PATH $PATH:/usr/include/gdal
 # Install SQL API
 RUN git clone git://github.com/CartoDB/CartoDB-SQL-API.git && \
     cd CartoDB-SQL-API && \
-    git checkout master && \
+    git checkout 1.26.0 && \
     ./configure && \
     npm install && \
     cp config/environments/development.js.example config/environments/development.js
@@ -105,7 +105,7 @@ RUN git clone git://github.com/CartoDB/CartoDB-SQL-API.git && \
 # Install Windshaft
 RUN git clone git://github.com/CartoDB/Windshaft-cartodb.git && \
     cd Windshaft-cartodb && \
-    git checkout master && \
+    git checkout 2.31.1 && \
     ./configure && \
     npm install && \
     mkdir logs && \
@@ -130,6 +130,7 @@ RUN cd /cartodb20 && \
 
 ENV PATH $PATH:/cartodb20/node_modules/grunt-cli/bin
 RUN npm install -g grunt-cli
+ 
 RUN cd /cartodb20 && \
     npm install grunt --save-dev && \
     bundle exec grunt --environment development && \
@@ -138,10 +139,12 @@ RUN cd /cartodb20 && \
 
 ENV REDIS_PORT 6379
 
-EXPOSE 3000 8080 8181
-
-#ADD ./config/app_config.yml /cartodb/config/app_config.yml
+ADD ./config/sql-dev.js /CartoDB-SQL-API/config/environments/development.js
+ADD ./config/ws-dev.js /Windshaft-cartodb/config/environments/development.js
+ADD ./config/app_config.yml /cartodb20/config/app_config.yml
 ADD ./config/database.yml /cartodb20/config/database.yml
 ADD ./start.sh /opt/start.sh
+
+EXPOSE 3000 8080 8181
 
 CMD ["/bin/bash", "/opt/start.sh"]
