@@ -8,7 +8,7 @@ var config = {
     ,uv_threadpool_size: undefined
     // Regular expression pattern to extract username
     // from hostname. Must have a single grabbing block.
-    ,user_from_host: '^(.*)\\.'
+    ,user_from_host: '^(.*)\\.localhost'
 
     // Base URLs for the APIs
     //
