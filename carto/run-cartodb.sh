@@ -70,9 +70,8 @@ check_option "postgres password" $POSTGRES_PASS
 RUNNING=$(docker inspect --format="{{ .State.Running }}" $CONTAINER_NAME 2> /dev/null)
 if [[ "$RUNNING" == "true" ]]; then
     echo "Container $CONTAINER_NAME already running!"
-    echo -n "Do you want to kill it?"
-    echo -n "Type yes if you do, or else to exit..."; read kill_container
-    if [[ "$kill_container" == "yes" ]]; then
+    echo -n -e "Enter 'y' to kill old container, or something else to exit.\n"; read kill_container
+    if [[ "$kill_container" == "y" ]]; then
         echo -n "killing $CONTAINER_NAME"
         sudo docker rm -f $CONTAINER_NAME >& /dev/null
     else
@@ -86,9 +85,10 @@ if [ ! -d $VOLUME ]; then
 fi
 chmod a+w $VOLUME
 
+docker_host="$(/sbin/ip route|awk '/default/ { print $3 }')"
 CMD="sudo docker run --name="${CONTAINER_NAME}" \
-        ${VOLUME_OPTION} \
         --hostname="${CONTAINER_NAME}" \
+        --add-host dockerhost:"$docker_host" \
         --restart=always \
 	-e CARTO_USER=${USER} \
 	-e CARTO_PASS=${PASSWORD} \
