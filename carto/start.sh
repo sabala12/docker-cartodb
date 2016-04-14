@@ -16,15 +16,14 @@ DOCKER_HOST_ADDRESS=$(gethostip -d dockerhost)
 sed -i 's/DOCKER_HOST_ADDRESS/'$DOCKER_HOST_ADDRESS'/g' /cartodb20/config/app_config.yml
 
 # Ask if user initialization is needed
-echo -n -e "Enter 'y' to run user initialization, or else to continue...\n"; read SET_DEV_USER
+echo -n -e "Enter 'y' to run user initialization, or else to continue.\n"; read SET_DEV_USER
 
 if [[ "$SET_DEV_USER" == "y" ]]; then
    cd /cartodb20
-   sh script/create_dev_user $SUBDOMAIN $CARTO_PASS example@gmail.com
+   bundle exec rake db:migrate
+   sh script/create_dev_user $CARTO_USER $CARTO_PASS example@gmail.com
 fi
 
-/bin/bash
-
-/opt/carto-service.sh
+/opt/carto-services.sh
 
 /bin/bash

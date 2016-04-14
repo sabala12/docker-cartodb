@@ -85,7 +85,7 @@ if [ ! -d $VOLUME ]; then
 fi
 chmod a+w $VOLUME
 
-docker_host="$(/sbin/ip route|awk '/default/ { print $3 }')"
+docker_host=$(hostname -I | cut -f1 -d' ')
 CMD="sudo docker run --name="${CONTAINER_NAME}" \
         --hostname="${CONTAINER_NAME}" \
         --add-host dockerhost:"$docker_host" \
