@@ -85,11 +85,13 @@ if [ ! -d $VOLUME ]; then
 fi
 chmod a+w $VOLUME
 
-docker_host=$(hostname -I | cut -f1 -d' ')
+#docker_host=$(hostname -I | cut -f1 -d' ')
+#--add-host dockerhost:"$docker_host" \
+docker_host_address=$(hostname)
 CMD="sudo docker run --name="${CONTAINER_NAME}" \
         --hostname="${CONTAINER_NAME}" \
-        --add-host dockerhost:"$docker_host" \
         --restart=always \
+        -e DOCKER_HOST_ADDRESS=${docker_host_address} \
 	-e CARTO_USER=${USER} \
 	-e CARTO_PASS=${PASSWORD} \
 	-e REDIS_ADDRESS=${REDIS_ADDRESS} \

@@ -12,7 +12,6 @@ sed -i 's/POSTGRES_ADDRESS/'$POSTGRES_ADDRESS'/g' /cartodb20/config/database.yml
 
 sed -i 's/POSTGRES_PASS/'$POSTGRES_PASS'/g' /cartodb20/config/database.yml
 
-DOCKER_HOST_ADDRESS=$(gethostip -d dockerhost)
 sed -i 's/DOCKER_HOST_ADDRESS/'$DOCKER_HOST_ADDRESS'/g' /cartodb20/config/app_config.yml
 
 # Ask if user initialization is needed
