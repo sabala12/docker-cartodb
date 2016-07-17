@@ -69,15 +69,12 @@ check_option "postgres password" $POSTGRES_PASS
 
 RUNNING=$(docker inspect --format="{{ .State.Running }}" $CONTAINER_NAME 2> /dev/null)
 if [[ "$RUNNING" == "true" ]]; then
-    echo "Container $CONTAINER_NAME already running!"
-    echo -n -e "Enter 'y' to kill old container, or something else to exit.\n"; read kill_container
-    if [[ "$kill_container" == "y" ]]; then
-        echo -n "killing $CONTAINER_NAME"
-        sudo docker rm -f $CONTAINER_NAME >& /dev/null
-    else
-        echo -n "goodbey (:"
-        exit 0
-    fi
+    echo "$CONTAINER_NAME already running!"
+    exit 0
+fi
+
+if [[ "$RUNNING" == "false" ]]; then
+    sudo docker rm -f $CONTAINER_NAME
 fi
 
 if [ ! -d $VOLUME ]; then
@@ -85,25 +82,21 @@ if [ ! -d $VOLUME ]; then
 fi
 chmod a+w $VOLUME
 
-#docker_host=$(hostname -I | cut -f1 -d' ')
-#--add-host dockerhost:"$docker_host" \
-docker_host_address=$(hostname)
+host_address=$(ip route get 1 | awk '{print $NF;exit}')
 CMD="sudo docker run --name="${CONTAINER_NAME}" \
-        --hostname="${CONTAINER_NAME}" \
-        --restart=always \
-        -e DOCKER_HOST_ADDRESS=${docker_host_address} \
-	-e CARTO_USER=${USER} \
-	-e CARTO_PASS=${PASSWORD} \
-	-e REDIS_ADDRESS=${REDIS_ADDRESS} \
-	-e POSTGRES_ADDRESS=${POSTGRES_ADDRESS} \
-	-e POSTGRES_PASS=${POSTGRES_PASS} \
-        --link redis:redis \
-        --link postgis:postgis \
-        -p 3000:3000 \
-        -p 8080:8080 \
-        -p 8181:8181 \
-	-it \
-	cartodb/cartodb:latest"
+        	     --hostname="${CONTAINER_NAME}" \
+        	     --restart=always \
+        	     -e DOCKER_HOST_ADDRESS=${host_address} \
+		     -e CARTO_USER=${USER} \
+		     -e CARTO_PASS=${PASSWORD} \
+		     -e REDIS_ADDRESS=${REDIS_ADDRESS} \
+		     -e POSTGRES_ADDRESS=${POSTGRES_ADDRESS} \
+		     -e POSTGRES_PASS=${POSTGRES_PASS} \
+        	     -p 3000:3000 \
+        	     -p 8080:8080 \
+        	     -p 8181:8181 \
+		     -it \
+		     carto:latest"
 
 echo 'Running cartodb'
 eval $CMD

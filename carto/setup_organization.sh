@@ -4,7 +4,7 @@ source /usr/local/rvm/scripts/rvm
 echo "insert into feature_flags (id,name, restricted) VALUES (1, 'heatmaps', false);" | psql -U postgres carto_db_development
 echo "insert into feature_flags (id,name, restricted) VALUES (2, 'georef_disabled', false);" | psql -U postgres carto_db_development
 
-ORGANIZATION_NAME="aman"
+ORGANIZATION_NAME="org"
 USERNAME="development"
 EMAIL="example@gmail.com"
 PASSWORD="277336"

@@ -1,0 +1,19 @@
+#!/bin/bash
+
+container_name="redis"
+persistent_storage="/data/redis"
+
+RUNNING=$(sudo docker inspect --format="{{ .State.Running }}" $container_name 2> /dev/null)
+if [[ "$RUNNING" == "true" ]]; then
+    echo "$container_name is already running!"
+    exit 0
+fi
+
+# make sure container does not exist
+sudo docker rm -f $container_name 2> /dev/null
+
+sudo docker run --name=$container_name \
+		-v $persistent_storage:/data \
+		-p 6379:6379 \
+		-it -d \
+		redis:latest

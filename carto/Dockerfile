@@ -1,5 +1,4 @@
-FROM cartodb/cartodb_base:latest
-MAINTAINER Ido Shamon
+FROM carto-base:latest
 
 ADD ./config/sql-dev.js /CartoDB-SQL-API/config/environments/development.js
 ADD ./config/ws-dev.js /Windshaft-cartodb/config/environments/development.js

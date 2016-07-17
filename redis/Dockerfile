@@ -1,5 +1,4 @@
 FROM ubuntu:12.04
-MAINTAINER Ido Shamon
 
 ENV DEBIAN_FRONTEND noninteractive
 

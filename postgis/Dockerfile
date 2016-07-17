@@ -106,11 +106,6 @@ RUN service postgresql start && \
 RUN mkdir /tmp/postgres-backup 
 RUN cp -r /var/lib/postgresql/* /tmp/postgres-backup/
 
-# Open port 5432 so linked containers can see them
-EXPOSE 5432
+ADD start.sh /opt/start.sh
 
-# We will RUN any commands in this when the container starts
-ADD start-postgis.sh /start-postgis.sh
-RUN chmod 0755 /start-postgis.sh
-
-CMD /start-postgis.sh
+CMD ["/bin/bash", "/opt/start.sh"]

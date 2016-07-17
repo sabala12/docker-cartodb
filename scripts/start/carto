@@ -1,0 +1,18 @@
+#!/bin/bash
+
+host_address=$(ip route get 1 | awk '{print $NF;exit}')
+redis_ip=$host_address
+postgis_ip=$host_address
+container_name="carto"
+persistent_storage="/data/cartodb"
+user_name="development"
+carto_password="277336"
+postgis_password=475909
+
+sudo ./../../carto/run-container.sh -n $container_name \
+                                    -v $persistent_storage \
+                                    -u $user_name \
+                                    -p $carto_password \
+                                    -a $redis_ip \
+                                    -b $postgis_ip \
+                                    -c $postgis_password

@@ -1,5 +1,4 @@
 FROM ubuntu:12.04
-MAINTAINER Ido Shamon
 
 # Configuring locales
 ENV DEBIAN_FRONTEND noninteractive
@@ -71,7 +70,8 @@ RUN apt-get update && \
     libicu-dev \
     postgresql-client \
     varnish \
-    vim
+    vim \
+    syslinux
 
 # GIS dependencies
 RUN apt-get install -y proj proj-bin proj-data libproj-dev
@@ -124,6 +124,7 @@ RUN cd /tmp && \
 RUN git clone --recursive https://github.com/CartoDB/cartodb20.git
 RUN sed -i 's/jwt (1.5.3)/jwt (1.5.4)/g' /cartodb20/Gemfile.lock
 RUN cd /cartodb20 && \
+    git checkout 3.12.3 && \
     RAILS_ENV=development bundle install && \
     npm install && \
     pip install --no-use-wheel -r python_requirements.txt
@@ -132,11 +133,7 @@ ENV PATH $PATH:/cartodb20/node_modules/grunt-cli/bin
 RUN npm install -g grunt-cli
  
 RUN cd /cartodb20 && \
-    npm install grunt --save-dev && \
+    npm install yo bower --save-dev && \
     bundle exec grunt --environment development && \
     cp config/app_config.yml.sample config/app_config.yml && \
     cp config/database.yml.sample config/database.yml
-
-ENV REDIS_PORT 6379
-
-RUN apt-get install -y syslinux
