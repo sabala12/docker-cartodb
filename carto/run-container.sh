@@ -10,25 +10,25 @@ This script runs a new docker cartodb instance for you.
 OPTIONS:
    -h      show this message
    -n      container name
-   -v      volume to mount the cartodb into
+   -v      carto data volume
    -u      carto user name
    -p      carto password
-   -a      redis address
-   -b      postgres address
-   -c      postgres password
+   -d      carto domain
+   -e      mail address
+   -o      organization
 EOF
 }
 
 check_option()
 {
-    if [[ -z $1 ]]; then
-        echo "option $0 no set"
+    if [[ -z $2 ]]; then
+        echo "option $1 no set"
         usage
         exit 1
     fi
 }
 
-while getopts ":h:n:v:u:p:a:b:c:" OPTION
+while getopts ":h:n:v:u:p:d:e:o:" OPTION
 do
      case $OPTION in
          n)
@@ -43,14 +43,14 @@ do
          p)
              PASSWORD=${OPTARG}
              ;;
-         a)  
-             REDIS_ADDRESS=${OPTARG}
+         d)
+             DOMAIN=${OPTARG}
              ;;
-         b)  
-             POSTGRES_ADDRESS=${OPTARG}
+         e)
+             EMAIL=${OPTARG}
              ;;
-         c)
-             POSTGRES_PASS=${OPTARG}
+         o)
+             ORGANIZATION=${OPTARG}
              ;;
          *)
              usage
@@ -63,16 +63,18 @@ check_option "volume" $VOLUME
 check_option "container_name" $CONTAINER_NAME
 check_option "user" $USER
 check_option "password" $PASSWORD
-check_option "redis address" $REDIS_ADDRESS
-check_option "postgres address" $POSTGRES_ADDRESS
-check_option "postgres password" $POSTGRES_PASS
+check_option "domain" $DOMAIN
+check_option "email" $EMAIL
+check_option "organiztion" $ORGANIZATION
+#check_option "redis address" $REDIS_ADDRESS
+#check_option "postgres address" $POSTGRES_ADDRESS
+#check_option "postgres password" $POSTGRES_PASS
 
 RUNNING=$(docker inspect --format="{{ .State.Running }}" $CONTAINER_NAME 2> /dev/null)
 if [[ "$RUNNING" == "true" ]]; then
     echo "Container $CONTAINER_NAME already running!"
     echo -n -e "Enter 'y' to kill old container, or something else to exit.\n"; read kill_container
     if [[ "$kill_container" == "y" ]]; then
-        echo -n "killing $CONTAINER_NAME"
         sudo docker rm -f $CONTAINER_NAME >& /dev/null
     else
         echo -n "goodbey (:"
@@ -87,23 +89,24 @@ chmod a+w $VOLUME
 
 #docker_host=$(hostname -I | cut -f1 -d' ')
 #--add-host dockerhost:"$docker_host" \
-docker_host_address=$(hostname)
-CMD="sudo docker run --name="${CONTAINER_NAME}" \
-        --hostname="${CONTAINER_NAME}" \
-        --restart=always \
-        -e DOCKER_HOST_ADDRESS=${docker_host_address} \
-	-e CARTO_USER=${USER} \
-	-e CARTO_PASS=${PASSWORD} \
-	-e REDIS_ADDRESS=${REDIS_ADDRESS} \
-	-e POSTGRES_ADDRESS=${POSTGRES_ADDRESS} \
-	-e POSTGRES_PASS=${POSTGRES_PASS} \
-        --link redis:redis \
-        --link postgis:postgis \
-        -p 3000:3000 \
-        -p 8080:8080 \
-        -p 8181:8181 \
-	-it \
-	cartodb/cartodb:latest"
+        #--link redis:redis \
+        #--link postgis:postgis \
+#--hostname="${CONTAINER_NAME}" \
 
-echo 'Running cartodb'
+#	             -e REDIS_ADDRESS=${REDIS_ADDRESS} \
+#	             -e POSTGRES_ADDRESS=${POSTGRES_ADDRESS} \
+#	             -e POSTGRES_PASS=${POSTGRES_PASS} \
+#docker_host_address=$(hostname)
+#-e DOCKER_HOST_ADDRESS=${docker_host_address} \
+CMD="sudo docker run --name="${CONTAINER_NAME}" \
+                     --network=host \
+                     --restart=always \
+	             -e CARTO_USER=${USER} \
+	             -e CARTO_PASSWORD=${PASSWORD} \
+                     -e CARTO_DOMAIN=${DOMAIN} \
+                     -e CARTO_EMAIL=${EMAIL} \
+                     -e CARTO_ORGANIZATION=${ORGANIZATION} \
+	             -it \
+	             carto:latest"
+
 eval $CMD

@@ -1,15 +1,11 @@
 #!/bin/bash
-# Commit and redeploy the user map container
 
 usage()
 {
 cat << EOF
 usage: $0 options
 
-This script runs a new docker postgis instance for you.
-To get the image run:
-docker pull kartoza/postgis
-
+This script runs a new postgis container.
 
 OPTIONS:
    -h      Show this message
@@ -23,18 +19,16 @@ EOF
 
 test_connection()
 {
-    IPADDRESS=`docker inspect $CONTAINER_NAME | grep IPAddress | grep -o '[0-9\.]*'`
-    echo "ip=$IPADDRESS"
     echo "user=$PGUSER"
     echo "database=$DATABASE"
     echo "password=$PGPASSWORD"
     sql_test="select case when true then 'true' end;"
-    echo "trying to estabish connection..."
-    sql_result=$(psql -U $PGUSER -d $DATABASE -h $IPADDRESS -c "$sql_test")
+    sql_result=$(psql -U $PGUSER -d $DATABASE -h 127.0.0.1 -c "$sql_test" 2> /dev/null)
     
     if [[ "$sql_result" =~ .*true.* ]]; then
         return 1
     else
+        echo "enable to establish connection."
         return 0
     fi
 }
@@ -44,9 +38,7 @@ validate_and_exit()
     test_connection
     local connection_status=$?
     if [[ connection_status -ne 1 ]]; then
-        echo "failed to established connection to database ):"
-    else
-        echo "good to go (:"
+        echo "failed to established database connection"
     fi
     exit 0
 }
@@ -62,17 +54,9 @@ make_pipe()
 
 wait_for_container()
 {
-    echo "listen to pipe=$container_pipe"
-    while read line <$container_pipe
-    do
-        if [[ "$line" == 'postgres_up' ]]; then
-                break
-        else
-                echo "unknown message $line"
-        fi
-    done
+    read line <$container_pipe
 
-    sleep 1
+    sleep 2
     sudo docker exec ${CONTAINER_NAME} service postgresql restart
     echo "1" >$pipe
 }
@@ -103,14 +87,14 @@ do
 done
 
 export PGPASSWORD=$PGPASSWORD
-RUNNING=$(docker inspect --format="{{ .State.Running }}" $CONTAINER_NAME 2> /dev/null)
+RUNNING=$(sudo docker inspect --format="{{ .State.Running }}" $CONTAINER_NAME 2> /dev/null)
 if [[ "$RUNNING" == "true" ]]; then
     echo "container $CONTAINER_NAME already running!"
     validate_and_exit
 fi
 
 # make sure container does not exist
-sudo docker rm $CONTAINER_NAME >& /dev/null
+sudo docker rm -f $CONTAINER_NAME 2> /dev/null
 
 echo "configuring parameters..."
 if [[ -z $VOLUME ]] || [[ -z $CONTAINER_NAME ]] || [[ -z $PGUSER ]] || [[ -z $PGPASSWORD ]] 
@@ -141,26 +125,16 @@ make_pipe $container_pipe
 wait_for_container &
 sleep 1
 
+#--hostname="${CONTAINER_NAME}" \
 CMD="sudo docker run --name="${CONTAINER_NAME}" \
         ${VOLUME_OPTION} \
-        --hostname="${CONTAINER_NAME}" \
+        --net=host \
         --restart=always \
-	-e POSTGRES_USER=${PGUSER} \
-	-e POSTGRES_PASS=${PGPASSWORD} \
+        -e POSTGRES_USER=${PGUSER} \
+        -e POSTGRES_PASS=${PGPASSWORD} \
         -e POSTGRES_DATABASE=${DATABASE} \
-        -p 5432:5432 \
-	-it \
-	cartodb/postgis:latest /start-postgis.sh"
+        -it \
+        postgis:latest"
 
 eval $CMD
-
-echo "listen to pipe=$pipe"
-while read line <$pipe
-do
-    sleep 1
-    if [[ "$line" == '1' ]]; then
-        echo "good to go (:"
-        break
-    fi
-    echo "unknown replay $line"
-done
+read line <$pipe

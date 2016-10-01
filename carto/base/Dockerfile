@@ -1,5 +1,5 @@
 FROM ubuntu:12.04
-MAINTAINER Ido Shamon
+MAINTAINER sabalah21@gmail.com
 
 # Configuring locales
 ENV DEBIAN_FRONTEND noninteractive
@@ -22,42 +22,23 @@ RUN add-apt-repository ppa:cartodb/postgresql-9.3 && \
 
 RUN apt-get update && \
     apt-get install -y \
-    build-essential \
     autoconf \
     automake \
-    libtool \
+    build-essential \
+    bison \
     checkinstall \
-    unp \
-    zip \
-    unzip \
+    ca-certificates \
     git-core \
     git \
-    subversion \
-    wget \
-    libjson0 \
-    python-simplejson \
-    nodejs \
-    ca-certificates \
-    redis-server \
-    python2.7-dev \
-    python-setuptools \
     imagemagick \
-    python-argparse \
-    python-chardet \
-    openssl \
+    libjson0 \
+    libtool \
     libreadline6 \
-    zlib1g \
-    zlib1g-dev \
-    libssl-dev \
     libyaml-dev \
     libsqlite3-dev \
     libxml2-dev \
     libxslt-dev \
-    libc6-dev \
-    ncurses-dev \
-    bison \
-    pkg-config \
-    libpq5 \
+    libssl-dev \
     libpq-dev \
     libffi-dev \
     libgdbm-dev \
@@ -66,12 +47,33 @@ RUN apt-get update && \
     libjpeg8-dev \
     libpango1.0-dev \
     libgif-dev \
-    pgtune \
     libgmp-dev \
     libicu-dev \
+    ncurses-dev \
+    nodejs \
+    openssl \
     postgresql-client \
+    pgtune \
+    pkg-config \
+    python-simplejson \
+    python2.7-dev \
+    python-setuptools \
+    python-argparse \
+    python-chardet \
+    redis-server \
+    syslinux \
     varnish \
-    vim
+    vim \
+    unp \
+    unzip \
+    wget \
+    zlib1g \
+    zlib1g-dev \
+    subversion \
+    zip
+
+# Install cartodb requested npm versions    
+RUN npm install -g npm@2.14.16
 
 # GIS dependencies
 RUN apt-get install -y proj proj-bin proj-data libproj-dev
@@ -97,7 +99,7 @@ ENV PATH $PATH:/usr/include/gdal
 # Install SQL API
 RUN git clone git://github.com/CartoDB/CartoDB-SQL-API.git && \
     cd CartoDB-SQL-API && \
-    git checkout 1.26.0 && \
+    git checkout master && \
     ./configure && \
     npm install && \
     cp config/environments/development.js.example config/environments/development.js
@@ -105,7 +107,7 @@ RUN git clone git://github.com/CartoDB/CartoDB-SQL-API.git && \
 # Install Windshaft
 RUN git clone git://github.com/CartoDB/Windshaft-cartodb.git && \
     cd Windshaft-cartodb && \
-    git checkout 2.31.1 && \
+    git checkout master && \
     ./configure && \
     npm install && \
     mkdir logs && \
@@ -116,27 +118,21 @@ RUN gem install bundler
 RUN gem install compass
 
 # Install pip
-RUN cd /tmp && \
-    wget -O /tmp/get-pip.py https://bootstrap.pypa.io/get-pip.py && \
+RUN wget -O /tmp/get-pip.py https://bootstrap.pypa.io/get-pip.py && \
     python /tmp/get-pip.py
 
-# Install CartoDB app
+# Install Carto App
 RUN git clone --recursive https://github.com/CartoDB/cartodb20.git
-RUN sed -i 's/jwt (1.5.3)/jwt (1.5.4)/g' /cartodb20/Gemfile.lock
-RUN cd /cartodb20 && \
-    RAILS_ENV=development bundle install && \
-    npm install && \
-    pip install --no-use-wheel -r python_requirements.txt
+RUN cd /cartodb20 && git checkout master
+RUN cd /cartodb20 && RAILS_ENV=development bundle install
+RUN cd /cartodb20 && npm install
+RUN cd /cartodb20 && pip install --no-use-wheel -r python_requirements.txt
 
 ENV PATH $PATH:/cartodb20/node_modules/grunt-cli/bin
-RUN npm install -g grunt-cli
  
 RUN cd /cartodb20 && \
-    npm install grunt --save-dev && \
+    bundle install && \
     bundle exec grunt --environment development && \
     cp config/app_config.yml.sample config/app_config.yml && \
-    cp config/database.yml.sample config/database.yml
-
-ENV REDIS_PORT 6379
-
-RUN apt-get install -y syslinux
+    cp config/database.yml.sample config/database.yml && \
+    mkdir log

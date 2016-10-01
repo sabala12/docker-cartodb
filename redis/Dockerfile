@@ -1,5 +1,5 @@
 FROM ubuntu:12.04
-MAINTAINER Ido Shamon
+MAINTAINER sabalah21@gmail.com
 
 ENV DEBIAN_FRONTEND noninteractive
 
@@ -9,12 +9,8 @@ RUN apt-get install -y sudo software-properties-common python-software-propertie
 RUN add-apt-repository ppa:cartodb/redis && sudo apt-get update
 RUN apt-get install -y redis-server
 
-VOLUME ["/data"]
-
-WORKDIR /data
-
-EXPOSE 6379
+#VOLUME ["/data"]
+#WORKDIR /data
 
 ADD start.sh /opt/start.sh
-
 CMD ["/bin/bash", "/opt/start.sh"]

@@ -65,11 +65,11 @@ module.exports.tmpDir = '/tmp';
 module.exports.ogr2ogrCommand = 'ogr2ogr';
 // Optional statsd support
 module.exports.statsd = {
-  host: 'localhost',
-  port: 8125,
-  prefix: 'dev.:host.',
-  cacheDns: true
-  // support all allowed node-statsd options
+    host: 'localhost',
+    port: 8125,
+    prefix: 'dev.:host.',
+    cacheDns: true
+    // support all allowed node-statsd options
 };
 module.exports.health = {
     enabled: true,

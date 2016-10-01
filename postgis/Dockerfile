@@ -1,5 +1,5 @@
 FROM ubuntu:12.04
-MAINTAINER Ido Shamon
+MAINTAINER sabalah21@gmail.com
 
 # Configuring locales
 ENV DEBIAN_FRONTEND noninteractive
@@ -22,22 +22,20 @@ RUN add-apt-repository ppa:cartodb/postgresql-9.3 && \
 
 RUN apt-get update && \
     apt-get install -y \
-    build-essential \
     autoconf \
     automake \
-    libtool \
+    build-essential \
+    ca-certificates \
     checkinstall \
-    zip \
-    unzip \
     git-core \
     git \
-    vim \
-    netcat \
-    wget \
-    nodejs \
+    libtool \
     libpq5 \
     libpq-dev \
-    ca-certificates \
+    libxml2-dev \
+    liblwgeom-2.1.8 \
+    netcat \
+    nodejs \
     python-setuptools \
     python2.7-dev \
     python-dev \
@@ -49,11 +47,13 @@ RUN apt-get update && \
     postgresql-server-dev-9.3 \
     postgresql-plpython-9.3 \
     postgresql-9.3-plproxy \
-    libxml2-dev \
-    liblwgeom-2.1.8 \
     postgis \
     postgresql-9.3-postgis-2.2 \
-    postgresql-9.3-postgis-scripts
+    postgresql-9.3-postgis-scripts \
+    unzip \
+    vim \
+    wget \
+    zip
 
 # GIS dependencies
 RUN apt-get install -y proj proj-bin proj-data libproj-dev
@@ -71,28 +71,27 @@ ENV PATH $PATH:/usr/include/gdal
 RUN rm /etc/postgresql/9.3/main/pg_hba.conf
 ADD ./pg_hba.conf /etc/postgresql/9.3/main/pg_hba.conf
 
-ADD auth-configuration.sh /home/auth-configuration.sh
-RUN chmod 0755 /home/auth-configuration.sh
-RUN service postgresql start && /home/auth-configuration.sh && \
+ADD auth-configuration.sh /tmp/auth-configuration.sh
+RUN chmod 0755 /tmp/auth-configuration.sh
+RUN service postgresql start && /tmp/auth-configuration.sh && \
     service postgresql stop
 
 # Setup template database
-ADD ./template_postgis.sh /tmp/template_postgis.sh
+ADD ./template-postgis.sh /tmp/template-postgis.sh
 RUN service postgresql start && \
-    /bin/su postgres -c /tmp/template_postgis.sh && \
+    /bin/su postgres -c /tmp/template-postgis.sh && \
     ldconfig && \
     service postgresql stop
 
 # Install cartodb extension
-RUN git clone https://github.com/CartoDB/cartodb-postgresql && \
-    cd cartodb-postgresql && \
-    PGUSER=postgres make install
+RUN git clone https://github.com/CartoDB/cartodb-postgresql
+RUN cd cartodb-postgresql && git checkout $(git describe --abbrev=0 --tags)
+RUN cd cartodb-postgresql && PGUSER=postgres make all install
 
 # Install schema_triggers
-RUN git clone https://github.com/CartoDB/pg_schema_triggers.git && \
-    cd pg_schema_triggers && \
-    make all install && \
-    sed -i \
+RUN git clone https://github.com/CartoDB/pg_schema_triggers.git
+RUN cd pg_schema_triggers && make all install
+RUN cd pg_schema_triggers && sed -i \
     "/#shared_preload/a shared_preload_libraries = 'schema_triggers.so'" \
     /etc/postgresql/9.3/main/postgresql.conf
 
@@ -102,15 +101,14 @@ RUN service postgresql start && \
     PGUSER=postgres make installcheck && \
     service postgresql stop
 
+RUN service postgresql start && \
+    createuser publicuser --no-createrole --no-createdb --no-superuser -U postgres && \
+    createuser tileuser --no-createrole --no-createdb --no-superuser -U postgres && \
+    service postgresql stop
+
 # Copy all postgresql data becuase of volume initialization
 RUN mkdir /tmp/postgres-backup 
 RUN cp -r /var/lib/postgresql/* /tmp/postgres-backup/
 
-# Open port 5432 so linked containers can see them
-EXPOSE 5432
-
-# We will RUN any commands in this when the container starts
-ADD start-postgis.sh /start-postgis.sh
-RUN chmod 0755 /start-postgis.sh
-
-CMD /start-postgis.sh
+ADD start.sh /opt/start.sh
+CMD ["/bin/bash", "/opt/start.sh"]
