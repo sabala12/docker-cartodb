@@ -45,7 +45,7 @@ You might want to put nginx in front of it to make it available from all hosts.
 
 I hope you find this installation helpful.
 
-If you have some troubles feal free send me a message to sabalah21@gmail.com.
+If you encounter any troubles feal free send me a message to sabalah21@gmail.com.
 
 
 # Credits
