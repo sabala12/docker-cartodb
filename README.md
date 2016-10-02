@@ -24,17 +24,17 @@ multiple location. But since it does not, I am leaving it up to you.
 
 # Installation
 
-cd docker-cartodb/redis/
+cd docker-cartodb/redis/  
 ./build.sh
 
-cd docker-cartodb/postgis/
+cd docker-cartodb/postgis/  
 ./build.sh
 
-cd docker-cartodb/carto/
+cd docker-cartodb/carto/  
 ./base/build.sh
 ./build.sh
 
-cd docker-cartodb/scripts/
+cd docker-cartodb/scripts/  
 ./entry.sh
 
 And it should be up and running on http://localhost:3000
