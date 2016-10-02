@@ -11,10 +11,10 @@ file was changed.
 
 If you would like to run postgres or redis on different host you would have
 to update the configs:
-/cartodb20/config/database.yml -> postgres
-/cartodb20/config/app_config.yml -> redis
-/Windshaft-cartodb/config/environments/{domain}.js -> redis, postgres
-/CartoDB-SQL-API/config/environments/{domain}.js -> redis, postgres
+/cartodb20/config/database.yml -> postgres  
+/cartodb20/config/app_config.yml -> redis  
+/Windshaft-cartodb/config/environments/{domain}.js -> redis, postgres  
+/CartoDB-SQL-API/config/environments/{domain}.js -> redis, postgres  
 
 Since config files tend to change from version to the next, I choose
 not to deal with the hosts separation.
