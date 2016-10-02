@@ -39,7 +39,7 @@ cd docker-cartodb/scripts/
 
 And it should be up and running on http://localhost:3000
 
-You might want to put nginx in front of it to make it available from all hosts.
+You might want to put nginx in front of it to make it available to other hosts.
 
 # Comments
 
