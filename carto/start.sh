@@ -10,7 +10,7 @@ if [[ "$SETUP" == "y" ]]; then
                 sh script/modify-user-settings.sh
         fi
 
-        /cacarto20/script/run-services.sh
+        /cartodb20/script/run-services.sh
 fi
 
 /bin/bash

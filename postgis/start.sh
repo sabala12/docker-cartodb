@@ -46,12 +46,18 @@ until `nc -z 127.0.0.1 5432`; do
 done
 
 if [ "$POSTGRES_DATABASE" ]; then
-    echo "creating requested database out of postgis template"
-    su - postgres -c "createdb -U $POSTGRES_USER -O $POSTGRES_USER -T template_postgis $POSTGRES_DATABASE;"
+    IS_DATABASE_EXIST=$(psql -lqt -U postgres -h localhost | cut -d \| -f 1 | grep -w $POSTGRES_DATABASE)
+
+    if [[ -n $IS_DATABASE_EXIST ]]; then
+        echo "$POSTGRES_DATABASE already exist."
+    else
+        echo "creating $POSTGRES_DATABASE out of postgis template"
+        su - postgres -c "createdb -U $POSTGRES_USER -O $POSTGRES_USER -T template_postgis $POSTGRES_DATABASE;"
+    fi
 fi
 
 # signal job is done
-echo "postgres_up" >/var/lib/postgresql/container_sock
+echo "postgres_up">/var/lib/postgresql/container_sock
 
 PID=`cat /var/run/postgresql/9.3-main.pid`
 kill -9 ${PID}
