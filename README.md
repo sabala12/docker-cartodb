@@ -31,7 +31,7 @@ cd docker-cartodb/postgis/
 ./build.sh
 
 cd docker-cartodb/carto/  
-./base/build.sh
+./base/build.sh  
 ./build.sh
 
 cd docker-cartodb/scripts/  
