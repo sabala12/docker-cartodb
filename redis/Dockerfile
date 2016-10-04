@@ -12,5 +12,5 @@ RUN apt-get install -y redis-server
 #VOLUME ["/data"]
 #WORKDIR /data
 
-ADD start.sh /opt/start.sh
+ADD scripts/start.sh /opt/start.sh
 CMD ["/bin/bash", "/opt/start.sh"]

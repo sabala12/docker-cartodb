@@ -1,9 +1,18 @@
 #!/bin/bash
 
-persistent_storage="/data/redis"
+if ! test -n "$CARTODB_BASE_PATH"; then
+        echo "Base path is not set."
+        echo "Add 'export CARTODB_BASE_PATH=...' to ~/.profile and run 'source ~/.profile'."
+        exit 1;
+fi
 
-sudo docker run --name="redis" \
-                --net=host \
-                -v $persistent_storage:/data \
-                -itd \
-                redis:latest
+if [[ ! -e $entry ]]; then
+        echo "cannot find $entry."
+        echo "check 'CARTODB_BASE_PATH' env value."
+        exit 1
+fi
+
+container_name="redis"
+entry="$CARTODB_BASE_PATH/redis/run-container.sh"
+
+sudo $entry -n $container_name

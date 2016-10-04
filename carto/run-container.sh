@@ -15,7 +15,8 @@ OPTIONS:
    -p      carto password
    -d      carto domain
    -e      mail address
-   -o      organization
+   -a      postgres address
+   -b      postgres password
 EOF
 }
 
@@ -28,7 +29,7 @@ check_option()
     fi
 }
 
-while getopts ":h:n:v:u:p:d:e:o:" OPTION
+while getopts ":h:n:v:u:p:d:e:a:b:" OPTION
 do
      case $OPTION in
          n)
@@ -49,8 +50,11 @@ do
          e)
              EMAIL=${OPTARG}
              ;;
-         o)
-             ORGANIZATION=${OPTARG}
+         a)
+             POSTGRES_ADDRESS=${OPTARG}
+             ;;
+         b)
+             POSTGRES_PASSWORD=${OPTARG}
              ;;
          *)
              usage
@@ -59,16 +63,12 @@ do
      esac
 done
 
-check_option "volume" $VOLUME
 check_option "container_name" $CONTAINER_NAME
+check_option "volume" $VOLUME
 check_option "user" $USER
 check_option "password" $PASSWORD
 check_option "domain" $DOMAIN
 check_option "email" $EMAIL
-check_option "organiztion" $ORGANIZATION
-#check_option "redis address" $REDIS_ADDRESS
-#check_option "postgres address" $POSTGRES_ADDRESS
-#check_option "postgres password" $POSTGRES_PASS
 
 RUNNING=$(docker inspect --format="{{ .State.Running }}" $CONTAINER_NAME 2> /dev/null)
 if [[ "$RUNNING" == "true" ]]; then
@@ -88,16 +88,7 @@ fi
 chmod a+w $VOLUME
 
 #docker_host=$(hostname -I | cut -f1 -d' ')
-#--add-host dockerhost:"$docker_host" \
-        #--link redis:redis \
-        #--link postgis:postgis \
 #--hostname="${CONTAINER_NAME}" \
-
-#	             -e REDIS_ADDRESS=${REDIS_ADDRESS} \
-#	             -e POSTGRES_ADDRESS=${POSTGRES_ADDRESS} \
-#	             -e POSTGRES_PASS=${POSTGRES_PASS} \
-#docker_host_address=$(hostname)
-#-e DOCKER_HOST_ADDRESS=${docker_host_address} \
 CMD="sudo docker run --name="${CONTAINER_NAME}" \
                      --network=host \
                      --restart=always \
@@ -105,7 +96,8 @@ CMD="sudo docker run --name="${CONTAINER_NAME}" \
 	             -e CARTO_PASSWORD=${PASSWORD} \
                      -e CARTO_DOMAIN=${DOMAIN} \
                      -e CARTO_EMAIL=${EMAIL} \
-                     -e CARTO_ORGANIZATION=${ORGANIZATION} \
+                     -e POSTGRES_ADDRESS=${POSTGRES_ADDRESS} \
+                     -e POSTGRES_PASSWORD=${POSTGRES_PASSWORD} \
 	             -it \
 	             carto:latest"
 
