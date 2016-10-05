@@ -6,6 +6,8 @@ if ! test -n "$CARTODB_BASE_PATH"; then
         exit 1;
 fi
 
+entry="$CARTODB_BASE_PATH/redis/run-container.sh"
+
 if [[ ! -e $entry ]]; then
         echo "cannot find $entry."
         echo "check 'CARTODB_BASE_PATH' env value."
@@ -13,6 +15,5 @@ if [[ ! -e $entry ]]; then
 fi
 
 container_name="redis"
-entry="$CARTODB_BASE_PATH/redis/run-container.sh"
 
 sudo $entry -n $container_name
