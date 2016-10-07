@@ -1,3 +1,3 @@
 #!/bin/bash
 
-sudo docker build -t "postgis:latest" ./
+sudo docker build -t "carto:postgis" ./

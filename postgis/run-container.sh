@@ -148,7 +148,7 @@ CMD="sudo docker run --name="${CONTAINER_NAME}" \
                      -e POSTGRES_PASS=${PGPASSWORD} \
                      -e POSTGRES_DATABASE=${DATABASE} \
                      -it \
-                     postgis:latest"
+                     carto:postgis"
 
 eval $CMD
 read line<$script_pipe

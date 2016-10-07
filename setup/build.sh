@@ -1,3 +1,3 @@
 #!/bin/bash
 
-sudo docker build -t "setup:latest" ./
+sudo docker build -t "carto:setup" ./

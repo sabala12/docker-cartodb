@@ -37,5 +37,5 @@ killContainer $CONTAINER_NAME false
 CMD="sudo docker run --name="${CONTAINER_NAME}" \
                      --net=host
                      -itd \
-                     redis:latest"
+                     carto:redis"
 eval $CMD

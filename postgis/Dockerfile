@@ -69,15 +69,15 @@ ENV PATH $PATH:/usr/include/gdal
 
 # Set connections policy
 RUN rm /etc/postgresql/9.3/main/pg_hba.conf
-ADD ./pg_hba.conf /etc/postgresql/9.3/main/pg_hba.conf
+ADD ./configs/pg_hba.conf /etc/postgresql/9.3/main/pg_hba.conf
 
-ADD auth-configuration.sh /tmp/auth-configuration.sh
+ADD ./scripts/auth-configuration.sh /tmp/auth-configuration.sh
 RUN chmod 0755 /tmp/auth-configuration.sh
 RUN service postgresql start && /tmp/auth-configuration.sh && \
     service postgresql stop
 
 # Setup template database
-ADD ./template-postgis.sh /tmp/template-postgis.sh
+ADD ./scripts/template-postgis.sh /tmp/template-postgis.sh
 RUN service postgresql start && \
     /bin/su postgres -c /tmp/template-postgis.sh && \
     ldconfig && \
@@ -110,5 +110,5 @@ RUN service postgresql start && \
 RUN mkdir /tmp/postgres-backup 
 RUN cp -r /var/lib/postgresql/* /tmp/postgres-backup/
 
-ADD start.sh /opt/start.sh
+ADD ./scripts/start.sh /opt/start.sh
 CMD ["/bin/bash", "/opt/start.sh"]

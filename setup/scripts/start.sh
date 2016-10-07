@@ -1,14 +1,14 @@
 #!/bin/bash
 
-read -t 3 -p "Enter 'n' to exit setup.\n" EXIT;
-if [[ "$EXIT" == "n" ]]; then
-
-        bash
-else
-        cd /cartodb20
-
-        # edit configs
-        sh script/setup-db.sh "${CARTO_DOMAIN}"
-        sh script/create_dev_user "${CARTO_USER}" "${CARTO_PASSWORD}" "${CARTO_EMAIL}"
-        sh script/upgrate-user.sh "${CARTO_USER}"
+if [[ -z ${CARTO_DOMAIN} ]]; then
+        echo "CARTO_DOMAIN is not set!"
+        exit 1
 fi
+
+cd /cartodb20
+
+#TODO: edit configs python script
+
+sh script/setup-db.sh "${CARTO_DOMAIN}"
+sh script/create_dev_user "${CARTO_USER}" "${CARTO_PASSWORD}" "${CARTO_EMAIL}"
+sh script/upgrade-user.sh "${CARTO_USER}"

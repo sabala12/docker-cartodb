@@ -72,6 +72,6 @@ CMD="sudo docker run --name="${CONTAINER_NAME}" \
                      -e POSTGRES_ADDRESS=${POSTGRES_ADDRESS} \
                      -e POSTGRES_PASSWORD=${POSTGRES_PASSWORD} \
 	             -it \
-	             carto:latest"
+	             carto:carto"
 
 eval $CMD

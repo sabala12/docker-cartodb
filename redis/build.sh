@@ -1,3 +1,3 @@
 #!/bin/bash
 
-sudo docker build -t "redis:latest" ./
+sudo docker build -t "carto:redis" ./
