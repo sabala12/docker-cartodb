@@ -18,7 +18,7 @@ rmContainer()
         checkArgs $FUNCNAME $__argc $#
 
         local __container_name=$1
-        sudo docker rm $CONTAINER_NAME &> /dev/null
+        sudo docker rm -f $__container_name &> /dev/null
 }
 
 containerStatus()
@@ -50,10 +50,10 @@ killContainer()
         local __container_name=$1
         local __always=$2
 
-        local __container_status=""
         containerStatus $__container_name __container_status
 
         if [[ "$__container_status" == "unknown" ]]; then
+                rmContainer $__container_name
                 return
         fi
 
