@@ -9,15 +9,14 @@ LOCALONLY="-c listen_addresses='127.0.0.1, ::1'"
 
 # test if DATADIR is existent
 if [ ! -d $DATADIR ]; then
-  echo "Creating Postgres data at $DATADIR"
+  echo "Postgres data at $DATADIR"
   mkdir -p $DATADIR
 fi
 
 # test if DATADIR has content
-if [ ! "$(ls -A $DATADIR)" ]; then
-  echo "Creating Postgres data at $DATADIR"
-  mkdir -p $DATADIR
-fi
+#if [ ! "$(ls -A $DATADIR)" ]; then
+#  mkdir -p $DATADIR
+#fi
 
 # test if DATADIR has content
 if [ ! "$(ls -A $DATADIR)" ]; then

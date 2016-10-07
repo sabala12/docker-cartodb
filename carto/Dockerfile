@@ -1,7 +1,6 @@
 FROM carto-base:latest
 MAINTAINER sabalah21@gmail.com
 
-ADD ./scripts/run-services.sh /cartodb20/script/run-services.sh
 ADD ./scripts/start.sh /opt/start.sh
 
 CMD ["/bin/bash", "/opt/start.sh"]

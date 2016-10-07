@@ -1,5 +1,9 @@
 #!/bin/bash
 
+WORKING_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+source $WORKING_DIR/../scripts/utils/general.sh
+source $WORKING_DIR/../scripts/utils/docker.sh
+
 usage()
 {
 cat << EOF
@@ -17,48 +21,72 @@ OPTIONS:
 EOF
 }
 
-test_connection()
+validateAndExit()
 {
     echo "user=$PGUSER"
     echo "database=$DATABASE"
-    echo "password=$PGPASSWORD"
     sql_test="select case when true then 'true' end;"
     sql_result=$(psql -U $PGUSER -d $DATABASE -h 127.0.0.1 -c "$sql_test" 2> /dev/null)
     
     if [[ "$sql_result" =~ .*true.* ]]; then
-        return 1
+        echo "$DATABASE is running."
+        exit 0
     else
-        echo "enable to establish connection."
-        return 0
+        echo "failed to establish database connection!"
+        exit 3
     fi
 }
 
-validate_and_exit()
+setVolume()
 {
-    test_connection
-    local connection_status=$?
-    if [[ connection_status -ne 1 ]]; then
-        echo "failed to established database connection"
+    local __argc=2
+    checkArgs $FUNCNAME $__argc $#
+
+    local __path=$1
+    local __result=$2
+
+    if [[ -f $__path ]]; then
+        echo "$__path is a file!"
+        exit 1
     fi
-    exit 0
+    
+    if [[ ! -d $__path ]]; then
+        mkdir $__path
+    fi
+    chmod a+w $__path
+
+    __volume_opt="-v ${VOLUME}:/var/lib/postgresql"
+    set $__result $__volume_opt
 }
 
-make_pipe()
-{
-    trap "rm -f $1" EXIT
-
-    if [[ ! -p $1 ]]; then
-            mkfifo $1
-    fi
-}
-
-wait_for_container()
+waitForContainer()
 {
     read line <$container_pipe
 
     sleep 2
     sudo docker exec ${CONTAINER_NAME} service postgresql restart
-    echo "1" >$pipe
+    echo "1" >$script_pipe
+}
+
+createPipe()
+{
+    local __argc=1
+    checkArgs $FUNCNAME $__argc $#
+
+    local __pipe=$1
+
+    if [[ -e $__pipe ]]; then
+        rm $__pipe
+    fi
+
+    trap "rm -f $__pipe" EXIT
+
+    if [[ ! -p $__pipe ]]; then
+        mkfifo $__pipe
+    else
+        echo "failed to create pipe at $__pipe"
+        exit 2
+    fi
 }
 
 while getopts ":h:n:v:u:p:d:" OPTION
@@ -86,66 +114,41 @@ do
      esac
 done
 
+checkOption CONTAINER_NAME
+checkOption VOLUME
+checkOption PGUSER
+checkOption PGPASSWORD
+checkOption DATABASE
+
 export PGPASSWORD=$PGPASSWORD
-RUNNING=$(sudo docker inspect --format="{{ .State.Running }}" $CONTAINER_NAME 2> /dev/null)
-if [[ "$RUNNING" == "true" ]]; then
-    echo "container $CONTAINER_NAME already running!"
-    validate_and_exit
+
+containerStatus $CONTAINER_NAME container_status &> /dev/null
+
+if [[ "$container_status" == "running" ]]; then
+    validateAndExit
 fi
 
-# make sure container does not exist
-sudo docker rm -f $CONTAINER_NAME &> /dev/null
+killContainer $CONTAINER_NAME false
 
-echo "configuring parameters..."
-if [[ -z $VOLUME ]] || [[ -z $CONTAINER_NAME ]] || [[ -z $PGUSER ]] || [[ -z $PGPASSWORD ]]; then
-     usage
-     exit 1
-fi
+setVal VOLUME_OPTION "-v $VOLUME:/var/lib/postgresql"
 
-if [[ ! -z $VOLUME ]]; then
-    VOLUME_OPTION="-v ${VOLUME}:/var/lib/postgresql"
-else
-    echo "missing VOLUME option!"
-    exit 1
-fi
-
-if [[ -f $VOLUME ]]; then
-    echo "$VOLUME cannot be a file!"
-    exit 1
-fi
-
-if [[ ! -d $VOLUME ]]; then
-    mkdir $VOLUME
-fi
-chmod a+w $VOLUME
-
-pipe=/tmp/script_sock
+script_pipe=${VOLUME}/script_sock
 container_pipe=${VOLUME}/container_sock
+createPipe $script_pipe
+createPipe $container_pipe
 
-if [[ -e $pipe ]]; then
-    rm $pipe
-fi
-
-if [[ -e $container_pipe ]]; then
-    rm $container_pipe
-fi
-
-make_pipe $pipe
-make_pipe $container_pipe
-
-wait_for_container &
+waitForContainer &
 sleep 1
 
-#--hostname="${CONTAINER_NAME}" \
 CMD="sudo docker run --name="${CONTAINER_NAME}" \
-        ${VOLUME_OPTION} \
-        --restart=always \
-        --net=host \
-        -e POSTGRES_USER=${PGUSER} \
-        -e POSTGRES_PASS=${PGPASSWORD} \
-        -e POSTGRES_DATABASE=${DATABASE} \
-        -it \
-        postgis:latest"
+                     ${VOLUME_OPTION} \
+                     --restart=always \
+                     --net=host \
+                     -e POSTGRES_USER=${PGUSER} \
+                     -e POSTGRES_PASS=${PGPASSWORD} \
+                     -e POSTGRES_DATABASE=${DATABASE} \
+                     -it \
+                     postgis:latest"
 
 eval $CMD
-read line <$pipe
+read line<$script_pipe

@@ -1,52 +1,73 @@
 #!/bin/bash
 
-source ./utils.sh
+WORKING_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+source $WORKING_DIR/general.sh
 
-container_status()
+stopContainer()
 {
-        local argc=2
-        check_args $FUNCNAME $argc $#
+        local __argc=1
+        checkArgs $FUNCNAME $__argc $#
+
+        local __container_name=$1
+        sudo docker stop $__container_name &> /dev/null
+}
+
+rmContainer()
+{
+        local __argc=1
+        checkArgs $FUNCNAME $__argc $#
+
+        local __container_name=$1
+        sudo docker rm $CONTAINER_NAME &> /dev/null
+}
+
+containerStatus()
+{
+        local __argc=2
+        checkArgs $FUNCNAME $__argc $#
                 
-        local CONTAINER_NAME=$1
-        local __RESULT_VAR=$2
+        local __container_name=$1
+        local __result=$2
 
-        RUNNING=$(docker inspect --format="{{ .State.Running }}" $CONTAINER_NAME 2> /dev/null)
+        local __running=$(sudo docker inspect --format="{{ .State.Running }}" $__container_name 2> /dev/null)
+        if [[ "$__running" == "true" ]]; then
+                setVal $__result "running"
 
-        if [ $? -eq 1 ]; then
-                set_val "$__RESULT_VAR" "unknown"
-                return
-        fi
+        elif [[ "$__running" == "stopped" ]]; then
+                setVal $__result "stopped"
 
-        if [[ "$RUNNING" == "true" ]]; then
-                set_val "$__RESULT_VAR" "running"
-                return
         else
-                set_val "$__RESULT_VAR" "stopped"
-                return
+                setVal $__result "unknown"
+
         fi
 }
 
-kill_container()
+killContainer()
 {
-        local argc=1
-        check_args $FUNCNAME $argc $#
+        local __argc=2
+        checkArgs $FUNCNAME $__argc $#
 
-        local CONTAINER_NAME=$1
-        local CONTAINER_STATUS=$2
-        container_status $CONTAINER_NAME
+        local __container_name=$1
+        local __always=$2
 
-        if [[ "$CONTAINER_STATUS" == "unknown" ]]; then
+        local __container_status=""
+        containerStatus $__container_name __container_status
+
+        if [[ "$__container_status" == "unknown" ]]; then
                 return
         fi
 
-        echo "$CONTAINER_NAME is $CONTAINER_STATUS."
-        echo -n -e "Enter y to kill the container, or else to continue.\n"; read KILL_CONTAINER
+        if [[ "$__always" == "true" ]]; then
+                local __kill_container="y"
+        else
+                echo -n -e "Enter y to kill $__container_name, or else to continue.\n"; read __kill_container
+        fi
 
-        if [[ "$KILL_CONTAINER" == "y" ]]; then
-                if [[ "$KILL_CONTAINER" == "y" ]]; then
-                        sudo docker stop $CONTAINER_NAME
+        if [[ "$__kill_container" == "y" ]]; then
+                if [[ "$__container_status" == "running" ]]; then
+                        stopContainer $__container_name
                 fi 
 
-                sudo docker rm $CONTAINER_NAME
+                rmContainer $__container_name
         fi
 }
