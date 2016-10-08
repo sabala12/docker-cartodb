@@ -1,7 +1,5 @@
 #!/bin/bash
 
-bash 
-
 if [[ -z ${CARTO_DOMAIN} ]]; then
         echo "CARTO_DOMAIN is not set!"
         exit 1

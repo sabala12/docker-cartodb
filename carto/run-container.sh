@@ -60,7 +60,7 @@ checkOption PASSWORD
 checkOption DOMAIN
 checkOption EMAIL
 
-killContainer $CONTAINER_NAME false
+killContainer $CONTAINER_NAME true
 
 CMD="sudo docker run --name="${CONTAINER_NAME}" \
                      --network=host \
