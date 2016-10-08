@@ -23,10 +23,11 @@ cd docker-cartodb/carto/
 ./build.sh
 
 cd docker-cartodb/scripts/  
-./setup.sh
+./setup.sh  
 ./deploy.sh
 
 echo "127.0.0.1 {USERNAME}.localhost.lan" | sudo tee -a /etc/hosts
+
 And it should be up and running on http://{USERNAME}.localhost.lan:3000
 
 # Comments
