@@ -132,6 +132,8 @@ killContainer $CONTAINER_NAME false
 
 setVal VOLUME_OPTION "-v $VOLUME:/var/lib/postgresql"
 
+mkdir -p $VOLUME
+
 script_pipe=${VOLUME}/script_sock
 container_pipe=${VOLUME}/container_sock
 createPipe $script_pipe

@@ -1,4 +1,4 @@
-FROM carto-base:latest
+FROM carto:base
 MAINTAINER sabalah21@gmail.com
 
 ADD ./scripts/setup-db.sh /cartodb20/script/setup-db.sh

@@ -32,7 +32,7 @@ done
 
 checkOption CONTAINER_NAME
 
-killContainer $CONTAINER_NAME false
+killContainer $CONTAINER_NAME true
 
 CMD="sudo docker run --name="${CONTAINER_NAME}" \
                      --net=host
