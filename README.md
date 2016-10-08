@@ -5,22 +5,10 @@ Docker configuration for CartoDB.
 
 This is a simple configuration for running cartodb app.
 
-Redis, Postgres, and CartoDB are separated to three containers.
-The containers net stack is linked to localhost, and therefor no config
-file was changed.
-
-If you would like to run postgres or redis on different host you would have
-to update the configs:
-/cartodb20/config/database.yml -> postgres  
-/cartodb20/config/app_config.yml -> redis  
-/Windshaft-cartodb/config/environments/{domain}.js -> redis, postgres  
-/CartoDB-SQL-API/config/environments/{domain}.js -> redis, postgres  
-
-Since config files tend to change from version to the next, I choose
-not to deal with the hosts separation.
-It would have been much more simple if the installation used environment 
-variables insted of specifing the same redis and postgres ip addressed in
-multiple location. But since it does not, I am leaving it up to you.
+All containers are linked to the host net stack, and therefore share
+the same ip address.
+To run postgres or redis on different hosts, you will have to change
+the corresponding configs.
 
 # Installation
 
@@ -35,18 +23,19 @@ cd docker-cartodb/carto/
 ./build.sh
 
 cd docker-cartodb/scripts/  
-./entry.sh
+./setup.sh
+./deploy.sh
 
-And it should be up and running on http://localhost:3000
-
-You might want to put nginx in front of it to make it available to other hosts.
+echo "127.0.0.1 {USERNAME}.localhost.lan" | sudo tee -a /etc/hosts
+And it should be up and running on http://{USERNAME}.localhost.lan:3000
 
 # Comments
 
 I hope you find this installation helpful.
 
-If you encounter any troubles feal free send me a message to sabalah21@gmail.com.
+If you encounter any troubles feal free send me a message. 
 
+sabalah21@gmail.com
 
 # Credits
 kartoza/docker-postgis
