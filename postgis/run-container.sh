@@ -23,16 +23,15 @@ EOF
 
 validateAndExit()
 {
-    echo "user=$PGUSER"
-    echo "database=$DATABASE"
     sql_test="select case when true then 'true' end;"
     sql_result=$(psql -U $PGUSER -d $DATABASE -h 127.0.0.1 -c "$sql_test" 2> /dev/null)
     
     if [[ "$sql_result" =~ .*true.* ]]; then
-        echo "$DATABASE is running."
         exit 0
     else
         echo "failed to establish database connection!"
+        echo "user=$PGUSER"
+        echo "database=$DATABASE"
         exit 3
     fi
 }
@@ -151,6 +150,10 @@ CMD="sudo docker run --name="${CONTAINER_NAME}" \
                      -e POSTGRES_DATABASE=${DATABASE} \
                      -it \
                      carto:postgis"
+
+echo "********************"
+echo "      postgis       "
+echo "********************"
 
 eval $CMD
 read line<$script_pipe

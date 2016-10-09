@@ -9,9 +9,8 @@ user_name="development"
 password="277336"
 domain="development"
 email="sabalah21@gmail.com"
-organization="org"
-postgis_ip=$(sudo docker inspect --format '{{ .NetworkSettings.IPAddress }}' postgis)
-postgis_password=475909
+#postgis_ip=$(sudo docker inspect --format '{{ .NetworkSettings.IPAddress }}' postgis)
+#postgis_password=475909
 
 setEntry $dir_name entry
 
@@ -19,6 +18,6 @@ sudo $entry -n $container_name \
             -u $user_name \
             -p $password \
             -d $domain \
-            -e $email \
-            -a $postgis_ip \
-            -b $postgis_password
+            -e $email 
+#            -a $postgis_ip \
+#            -b $postgis_password

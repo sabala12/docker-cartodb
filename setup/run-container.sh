@@ -74,4 +74,8 @@ CMD="sudo docker run --name="${CONTAINER_NAME}" \
                      -it \
                      carto:setup"
 
+echo "********************"
+echo "       setup        "
+echo "********************"
+
 eval $CMD

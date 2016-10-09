@@ -1,14 +1,25 @@
 #!/bin/bash
 
-if [[ -z ${CARTO_DOMAIN} ]]; then
-        echo "CARTO_DOMAIN is not set!"
-        exit 1
-fi
+checkOption()
+{
+        local __value=$(echo "${!1}")
+        if [[ -z ${__value} ]]; then
+                echo "option $1 is not set!"
+                exit 1
+        fi
+}
+
+checkOption "CARTO_DOMAIN"
+checkOption "CARTO_USER"
+checkOption "CARTO_PASSWORD"
+checkOption "CARTO_EMAIL"
 
 cd /cartodb20
 
 #TODO: edit configs python script
-
+echo "***** setup-db *****"
 sh script/setup-db.sh "${CARTO_DOMAIN}" "${CARTO_USER}" "${CARTO_PASSWORD}" "${CARTO_EMAIL}" 
+echo "** create_dev_user *"
 sh script/create_dev_user "${CARTO_USER}" "${CARTO_PASSWORD}" "${CARTO_EMAIL}"
-sh script/upgrade-user.sh "${CARTO_USER}"
+echo "*** upgrade-user ***"
+sh script/upgrade-user.sh "${CARTO_DOMAIN}" "${CARTO_USER}"

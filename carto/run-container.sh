@@ -56,4 +56,8 @@ CMD="sudo docker run --name="${CONTAINER_NAME}" \
 	             -it \
 	             carto:carto"
 
+echo "********************"
+echo "       carto        "
+echo "********************"
+
 eval $CMD

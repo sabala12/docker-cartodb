@@ -32,10 +32,23 @@ done
 
 checkOption CONTAINER_NAME
 
-killContainer $CONTAINER_NAME true
+containerStatus $CONTAINER_NAME container_status &> /dev/null
+
+if [[ "$container_status" == "running" ]]; then
+    #validateAndExit
+    exit 0
+fi
+
+killContainer $CONTAINER_NAME false
 
 CMD="sudo docker run --name="${CONTAINER_NAME}" \
+                     --restart=always \
                      --net=host
                      -itd \
                      carto:redis"
+
+echo "********************"
+echo "       redis        "
+echo "********************"
+
 eval $CMD
