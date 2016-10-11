@@ -7,31 +7,41 @@ POSTGRES="/usr/lib/postgresql/9.3/bin/postgres"
 INITDB="/usr/lib/postgresql/9.3/bin/initdb"
 LOCALONLY="-c listen_addresses='127.0.0.1, ::1'"
 
-# test if DATADIR is existent
+# Handle data deletion due to volume initialization
 if [ ! -d $DATADIR ]; then
   echo "Postgres data at $DATADIR"
   mkdir -p $DATADIR
 fi
 
-# test if DATADIR has content
 if [ ! "$(ls -A $DATADIR)" ]; then
   echo "Setting up Postgres Database at $DATADIR"
   cp -r /tmp/postgres-backup/9.3/main/* $DATADIR/
+  rm -r /tmp/postgres-backup
 fi
+
 
 # cahange postgres data directory
 chown -R postgres:postgres $DATADIR
 chmod -R 700 $DATADIR
 
+
 # Make sure we have a user set up
 if [ -z "$POSTGRES_USER" ]; then
+  #TODO set user
   echo "Missing user name!"
   exit 0
 fi  
+
 if [ -z "$POSTGRES_PASS" ]; then
+  #TODO set password
   echo "Missing password!"
   exit 0
 fi  
+
+
+# Add user to ssl-cert to get files permissions
+usermod -a -G ssl-cert $POSTGRES_USER
+
 
 service postgresql start
 until `nc -z 127.0.0.1 5432`; do
@@ -39,6 +49,8 @@ until `nc -z 127.0.0.1 5432`; do
     sleep 1
 done
 
+
+# Create database
 #if [ "$POSTGRES_DATABASE" ]; then
 #    IS_DATABASE_EXIST=$(psql -lqt -U postgres -h localhost | cut -d \| -f 1 | grep -w $POSTGRES_DATABASE)
 #

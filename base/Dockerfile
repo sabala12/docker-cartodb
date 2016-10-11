@@ -60,6 +60,7 @@ RUN apt-get update && \
     python-setuptools \
     python-argparse \
     python-chardet \
+    python-gdal \
     redis-server \
     syslinux \
     varnish \
@@ -80,7 +81,7 @@ RUN apt-get install -y proj proj-bin proj-data libproj-dev
 RUN apt-get install -y libjson0 libjson0-dev python-simplejson
 RUN apt-get install -y libgeos-c1v5 libgeos-dev
 RUN apt-get install -y gdal-bin libgdal1-dev libgdal-dev
-RUN apt-get install -y ogr2ogr2-static-bin
+#RUN apt-get install -y ogr2ogr2-static-bin
  
 # Install Ruby
 RUN cd /tmp && \
