@@ -18,9 +18,14 @@ cd docker-cartodb/redis/
 cd docker-cartodb/postgis/  
 ./build.sh
 
+cd docker-cartodb/base/  
+./build
+
+cd docker-cartodb/setup/  
+./build
+
 cd docker-cartodb/carto/  
-./base/build.sh  
-./build.sh
+./build.sh  
 
 cd docker-cartodb/scripts/  
 ./setup.sh  
