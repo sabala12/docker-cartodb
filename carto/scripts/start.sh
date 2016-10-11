@@ -5,8 +5,6 @@ if [[ -z ${CARTO_DOMAIN} ]]; then
         exit 1
 fi
 
-bash
-
 #TODO: python script to edit config files
 cd /Windshaft-cartodb
 node app.js ${CARTO_DOMAIN} > windshaft.log 2> windshaft.err &

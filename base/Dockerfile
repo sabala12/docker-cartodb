@@ -81,7 +81,7 @@ RUN apt-get install -y proj proj-bin proj-data libproj-dev
 RUN apt-get install -y libjson0 libjson0-dev python-simplejson
 RUN apt-get install -y libgeos-c1v5 libgeos-dev
 RUN apt-get install -y gdal-bin libgdal1-dev libgdal-dev
-#RUN apt-get install -y ogr2ogr2-static-bin
+RUN apt-get install -y gdal2.1-static-bin
  
 # Install Ruby
 RUN cd /tmp && \
@@ -96,6 +96,7 @@ ENV PATH $PATH:/opt/rubies/ruby-2.2.3/bin
 ENV CPLUS_INCLUDE_PATH $CPLUS_INCLUDE_PATH:/usr/include/gdal
 ENV C_INCLUDE_PATH $C_INCLUDE_PATH:/usr/include/gdal
 ENV PATH $PATH:/usr/include/gdal
+ENV GDAL_DATA=/usr/share/gdal/2.1
 
 # Install SQL API
 RUN git clone git://github.com/CartoDB/CartoDB-SQL-API.git && \
