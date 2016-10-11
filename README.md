@@ -39,7 +39,7 @@ And it should be up and running on http://{USERNAME}.localhost.lan:3000
 
 I hope you find this installation helpful.
 
-If you encounter any troubles feal free send me a message. 
+If you encounter any troubles feal free to send me a message. 
 
 sabalah21@gmail.com
 
