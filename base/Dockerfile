@@ -138,3 +138,13 @@ RUN cd /cartodb20 && \
     cp config/app_config.yml.sample config/app_config.yml && \
     cp config/database.yml.sample config/database.yml && \
     mkdir log
+
+# configurations editing script
+ADD ./config-editor /opt/configs-editor
+RUN cd /opt/configs-editor && npm install
+
+# Add editor configs
+ADD ./configs /opt/configs
+
+# utils script
+ADD ./scripts/utils.sh /usr/local/lib/utils.sh

@@ -1,0 +1,3 @@
+defaults: &defaults
+  session_domain:     'localhost.lan'
+  subdomainless_urls: true

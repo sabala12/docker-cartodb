@@ -59,11 +59,13 @@ checkOption USER
 checkOption PASSWORD
 checkOption DOMAIN
 checkOption EMAIL
+checkOption POSTGRES_ADDRESS
+checkOption POSTGRES_PASSWORD
 
 killContainer $CONTAINER_NAME true
 
 CMD="sudo docker run --name="${CONTAINER_NAME}" \
-                     --network=host \
+                     --net=host \
                      --restart=always \
                      -e CARTO_USER=${USER} \
                      -e CARTO_PASSWORD=${PASSWORD} \

@@ -2,22 +2,15 @@
 
 WORKING_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 source $WORKING_DIR/../utils/general.sh
+source $WORKING_DIR/../utils/params.sh
 
-dir_name="setup"
 container_name="setup"
-user_name="development"
-password="277336"
-domain="development"
-email="sabalah21@gmail.com"
-#postgis_ip=$(sudo docker inspect --format '{{ .NetworkSettings.IPAddress }}' postgis)
-#postgis_password=475909
-
-setEntry $dir_name entry
+entry="$WORKING_DIR/../../setup/run-container.sh"
 
 sudo $entry -n $container_name \
-            -u $user_name \
-            -p $password \
-            -d $domain \
-            -e $email 
-#            -a $postgis_ip \
-#            -b $postgis_password
+            -d $carto_domain \
+            -u $carto_user \
+            -p $carto_password \
+            -e $carto_email \
+            -a $postgres_address \
+            -b $postgres_password

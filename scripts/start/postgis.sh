@@ -2,18 +2,13 @@
 
 WORKING_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 source $WORKING_DIR/../utils/general.sh
+source $WORKING_DIR/../utils/params.sh
 
-dir_name="postgis"
 container_name="postgis"
-persistent_storage="/data/postgis"
-user_name="postgres"
-pass="475909"
-database="carto_db_development"
-
-setEntry $dir_name entry
+entry="$WORKING_DIR/../../postgis/run-container.sh"
 
 sudo $entry -n $container_name \
-            -v $persistent_storage \
-            -u $user_name \
-            -p $pass \
-            -d $database
+            -v $postgres_storage \
+            -u $postgres_user \
+            -p $postgres_password \
+            -d $postgres_database

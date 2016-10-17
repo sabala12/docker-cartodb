@@ -1,0 +1,20 @@
+{
+  "name": "config-editor",
+  "version": "1.0.0",
+  "description": "modify config files",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "sabalah21@gmail.com",
+  "license": "ISC",
+  "private": true,
+  "dependencies": {
+    "command-line-args": "^3.0.1",
+    "fs": "0.0.1-security",
+    "getenv": "^0.7.0",
+    "merge": "^1.2.0",
+    "path": "^0.12.7",
+    "yamljs": "^0.2.8"
+  }
+}

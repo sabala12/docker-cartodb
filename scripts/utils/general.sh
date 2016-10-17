@@ -59,26 +59,26 @@ checkOption()
         fi
 }
 
-setEntry()
-{
-        local __argc=2
-        checkArgs $FUNCNAME $__argc $#
-
-        local __dir_name=$1
-        local __result=$2
-
-        if ! test -n "$CARTODB_BASE_PATH"; then
-                echo "\$CARTODB_BASE_PATH is not set"
-                exit 1;
-        fi
-        
-        local __entry="$CARTODB_BASE_PATH/$__dir_name/run-container.sh"
-        
-        if [[ ! -e $__entry ]]; then
-                echo "cannot find $__entry."
-                echo "check 'CARTODB_BASE_PATH' env is set correctly."
-                exit 1
-        else
-                setVal $__result $__entry
-        fi
-}
+#setEntry()
+#{
+#        local __argc=2
+#        checkArgs $FUNCNAME $__argc $#
+#
+#        local __dir_name=$1
+#        local __result=$2
+#
+#        if ! test -n "$CARTODB_BASE_PATH"; then
+#                echo "\$CARTODB_BASE_PATH is not set"
+#                exit 1;
+#        fi
+#        
+#        local __entry="$CARTODB_BASE_PATH/$__dir_name/run-container.sh"
+#        
+#        if [[ ! -e $__entry ]]; then
+#                echo "cannot find $__entry."
+#                echo "check 'CARTODB_BASE_PATH' env is set correctly."
+#                exit 1
+#        else
+#                setVal $__result $__entry
+#        fi
+#}

@@ -1,0 +1,34 @@
+defaults: &defaults
+session_domain:     '.localhost.lan'
+subdomainless_urls: false
+account_host:       'localhost.lan:3000'
+account_path:       '/account'
+vizjson_cache_domains: ['.localhost.lan']
+tiler:
+    internal:
+        domain:        'localhost.lan'
+host:          '127.0.0.1'
+private:
+    domain:        'localhost.lan'
+public:
+    domain:        'localhost.lan'
+sql_api:
+    private:
+        domain:     'localhost.lan'
+public:
+    domain:     'localhost.lan'
+developers_host:    'http://developers.localhost.lan:3000'
+org_metadata_api:
+    host: 'localhost.lan'
+layer_opts:
+    data:
+        options:
+            tiler_domain:       "localhost.lan"
+sql_domain:         "localhost.lan"
+app_assets:
+    asset_host: "//cartodb-libs.global.ssl.fastly.net/cartodbui"
+avatars:
+    gravatar_enabled: true
+base_url: 'example.com/avatars'
+kinds: ['stars', 'mountains']
+colors: ['red', 'blue']

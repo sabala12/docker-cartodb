@@ -16,14 +16,13 @@ fi
 if [ ! "$(ls -A $DATADIR)" ]; then
   echo "Setting up Postgres Database at $DATADIR"
   cp -r /tmp/postgres-backup/9.3/main/* $DATADIR/
-  rm -r /tmp/postgres-backup
 fi
 
+rm -r /tmp/postgres-backup
 
 # cahange postgres data directory
 chown -R postgres:postgres $DATADIR
 chmod -R 700 $DATADIR
-
 
 # Make sure we have a user set up
 if [ -z "$POSTGRES_USER" ]; then
@@ -38,17 +37,22 @@ if [ -z "$POSTGRES_PASS" ]; then
   exit 0
 fi  
 
+# Fix ssl-cert permissions
+ssl_private="/etc/ssl/private"
+ssl_private_copy="/etc/ssl/private-copy"
+mkdir $ssl_private_copy
+cp -r $ssl_private/* $ssl_private_copy
+rm -r $ssl_private
+mv $ssl_private_copy $ssl_private
 
-# Add user to ssl-cert to get files permissions
-usermod -a -G ssl-cert $POSTGRES_USER
-
+chmod -R 0700 $ssl_private
+chown -R postgres $ssl_private
 
 service postgresql start
 until `nc -z 127.0.0.1 5432`; do
     echo "$(date) - waiting for postgres (localhost-only)..."
     sleep 1
 done
-
 
 # Create database
 #if [ "$POSTGRES_DATABASE" ]; then

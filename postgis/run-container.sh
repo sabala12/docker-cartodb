@@ -24,7 +24,7 @@ EOF
 validateAndExit()
 {
     sql_test="select case when true then 'true' end;"
-    sql_result=$(psql -U $PGUSER -d $DATABASE -h 127.0.0.1 -c "$sql_test" 2> /dev/null)
+    sql_result=$(psql -U $PGUSER -h "localhost" -c "$sql_test" 2> /dev/null)
     
     if [[ "$sql_result" =~ .*true.* ]]; then
         exit 0

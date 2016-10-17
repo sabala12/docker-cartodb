@@ -1,20 +1,28 @@
 #!/bin/bash
 
-if [[ -z ${CARTO_DOMAIN} ]]; then
-        echo "CARTO_DOMAIN is not set!"
-        exit 1
+source /usr/local/lib/utils.sh
+
+checkOption "CARTO_DOMAIN"
+checkOption "CARTO_HOST"
+checkOption "CARTO_OFFLINE"
+checkOption "POSTGRES_ADDRESS"
+checkOption "POSTGRES_PASSWORD"
+
+if [[ "$CARTO_OFFLINE" == "true" ]]; then
+        setOfflineConfig
 fi
 
-#TODO: python script to edit config files
+setPostgresConfig
+
 cd /Windshaft-cartodb
-node app.js ${CARTO_DOMAIN} > windshaft.log 2> windshaft.err &
+node app.js ${CARTO_DOMAIN} &> /dev/null &
 
 cd /CartoDB-SQL-API
-node app.js ${CARTO_DOMAIN} > cartodb_sql_api.log 2> cartodb_sql_api.err &
+node app.js ${CARTO_DOMAIN} &> /dev/null &
 
 cd /cartodb20
-RAILS_ENV=${CARTO_DOMAIN} bundle exec script/resque > resque.log 2> resque_err.log &
+RAILS_ENV=${CARTO_DOMAIN} bundle exec script/resque > resque.log &
 
-RAILS_ENV=${CARTO_DOMAIN} bundle exec thin start --threaded -p 3000 --threadpool-size 5 > carto.log 2> carto.err &
+RAILS_ENV=${CARTO_DOMAIN} bundle exec thin start --threaded -p 3000 --threadpool-size 5 > carto.log &
 
 bash

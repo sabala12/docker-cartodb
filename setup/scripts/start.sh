@@ -1,22 +1,17 @@
 #!/bin/bash
 
-checkOption()
-{
-        local __value=$(echo "${!1}")
-        if [[ -z ${__value} ]]; then
-                echo "option $1 is not set!"
-                exit 1
-        fi
-}
+source /usr/local/lib/utils.sh
 
 checkOption "CARTO_DOMAIN"
 checkOption "CARTO_USER"
 checkOption "CARTO_PASSWORD"
 checkOption "CARTO_EMAIL"
+checkOption "POSTGRES_ADDRESS"
+checkOption "POSTGRES_PASSWORD"
+
+setPostgresConfig
 
 cd /cartodb20
-
-#TODO: edit configs python script
 echo "***** setup-db *****"
 sh script/setup-db.sh "${CARTO_DOMAIN}" "${CARTO_USER}" "${CARTO_PASSWORD}" "${CARTO_EMAIL}" 
 echo "** create_dev_user *"
