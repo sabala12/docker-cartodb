@@ -5,8 +5,8 @@ Docker configuration for CartoDB.
 
 This is a simple configuration for running cartodb app.
 
-All containers are linked to the host net stack, and therefore share
-the same ip address.
+By default All containers are linked to the host net stack, and therefore share
+the same ip address.  
 
 # Installation
 
