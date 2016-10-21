@@ -30,7 +30,7 @@ echo "127.0.0.1 {USERNAME}.localhost.lan" | sudo tee -a /etc/hosts
 And it should be up and running on http://{USERNAME}.localhost.lan:3000
 
 # Offline
-I managed to run cartodb offline. I discarded this option for simplicity.
+I managed to run cartodb offline. I discarded this option for simplicity.  
 If it is necessary send me a message.
 
 # Comments
