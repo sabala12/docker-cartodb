@@ -44,7 +44,7 @@ killContainer $CONTAINER_NAME false
 CMD="sudo docker run --name="${CONTAINER_NAME}" \
                      --restart=always \
                      --net=host
-                     -itd \
+                     -it \
                      carto:redis"
 
 echo "********************"

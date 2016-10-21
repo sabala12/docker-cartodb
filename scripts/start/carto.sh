@@ -8,8 +8,8 @@ container_name="carto"
 entry="$WORKING_DIR/../../carto/run-container.sh"
 
 sudo $entry -n $container_name \
+            -c $net_domain \
             -d $carto_domain \
             -e $carto_host \
-            -o $offline \
             -a $postgres_address \
             -b $postgres_password

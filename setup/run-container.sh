@@ -12,22 +12,26 @@ usage: $0 options
 This script runs a new docker cartodb setup instance for you.
 
 OPTIONS:
--h      show this message
--n      container name
--u      carto user name
--p      carto password
--d      carto domain
--e      mail address
--a      postgres address
--b      postgres password
+   -h      show this message
+   -n      container name
+   -c      network domain
+   -u      carto user name
+   -p      carto password
+   -d      carto domain
+   -e      mail address
+   -a      postgres address
+   -b      postgres password
 EOF
 }
 
-while getopts ":h:n:u:p:d:e:a:b:" OPTION
+while getopts ":h:n:c:u:p:d:e:a:b:" OPTION
 do
      case $OPTION in
          n)
              CONTAINER_NAME=${OPTARG}
+             ;;
+         c)
+             NET_DOMAIN=${OPTARG}
              ;;
          u)
              USER=${OPTARG}
@@ -67,6 +71,7 @@ killContainer $CONTAINER_NAME true
 CMD="sudo docker run --name="${CONTAINER_NAME}" \
                      --net=host \
                      --restart=always \
+                     -e NET_DOMAIN=${NET_DOMAIN} \
                      -e CARTO_USER=${USER} \
                      -e CARTO_PASSWORD=${PASSWORD} \
                      -e CARTO_DOMAIN=${DOMAIN} \

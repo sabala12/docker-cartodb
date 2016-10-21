@@ -73,8 +73,9 @@ RUN apt-get update && \
     subversion \
     zip
 
-# Install cartodb requested npm versions    
+# Install cartodb requested npm version
 RUN npm install -g npm@2.14.16
+RUN npm install -g forever
 
 # GIS dependencies
 RUN apt-get install -y proj proj-bin proj-data libproj-dev
@@ -104,7 +105,10 @@ RUN git clone git://github.com/CartoDB/CartoDB-SQL-API.git && \
     git checkout master && \
     ./configure && \
     npm install && \
-    cp config/environments/development.js.example config/environments/development.js
+    mv config/environments/development.js.example config/environments/development.js && \
+    mv config/environments/production.js.example config/environments/production.js && \
+    mv config/environments/staging.js.example config/environments/staging.js && \
+    mv config/environments/test.js.example config/environments/test.js 
 
 # Install Windshaft
 RUN git clone git://github.com/CartoDB/Windshaft-cartodb.git && \
@@ -113,7 +117,10 @@ RUN git clone git://github.com/CartoDB/Windshaft-cartodb.git && \
     ./configure && \
     npm install && \
     mkdir logs && \
-    cp config/environments/development.js.example config/environments/development.js
+    cp config/environments/development.js.example config/environments/development.js && \
+    cp config/environments/production.js.example config/environments/production.js && \
+    cp config/environments/staging.js.example config/environments/staging.js && \
+    cp config/environments/test.js.example config/environments/test.js 
 
 # Install gems
 RUN gem install bundler
@@ -139,12 +146,10 @@ RUN cd /cartodb20 && \
     cp config/database.yml.sample config/database.yml && \
     mkdir log
 
-# configurations editing script
+# Configurations editing script
 ADD ./config-editor /opt/configs-editor
 RUN cd /opt/configs-editor && npm install
 
-# Add editor configs
+# Common
 ADD ./configs /opt/configs
-
-# utils script
 ADD ./scripts/utils.sh /usr/local/lib/utils.sh

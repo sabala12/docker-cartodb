@@ -9,8 +9,8 @@ RUN apt-get install -y sudo software-properties-common python-software-propertie
 RUN add-apt-repository ppa:cartodb/redis && sudo apt-get update
 RUN apt-get install -y redis-server
 
-#VOLUME ["/data"]
-#WORKDIR /data
+VOLUME ["/data"]
+WORKDIR /data
 
 ADD scripts/start.sh /opt/start.sh
 CMD ["/bin/bash", "/opt/start.sh"]

@@ -14,28 +14,28 @@ This script runs a new docker cartodb instance for you.
 OPTIONS:
    -h      show this message
    -n      container name
+   -c      network domain
    -d      carto domain
    -e      host machine name
-   -o      run off the internet
    -a      postgres address
    -b      postgres password
 EOF
 }
 
-while getopts ":h:n:d:e:o:a:b:" OPTION
+while getopts ":h:n:c:d:e:a:b:" OPTION
 do
      case $OPTION in
          n)
              CONTAINER_NAME=${OPTARG}
+             ;;
+         c)
+             NET_DOMAIN=${OPTARG}
              ;;
          d)
              DOMAIN=${OPTARG}
              ;;
          e)
              HOST=${OPTARG}
-             ;;
-         o)
-             OFFLINE=${OPTARG}
              ;;
          a)
              POSTGRES_ADDRESS=${OPTARG}
@@ -53,7 +53,6 @@ done
 checkOption CONTAINER_NAME
 checkOption DOMAIN
 checkOption HOST
-checkOption OFFLINE
 checkOption POSTGRES_ADDRESS
 checkOption POSTGRES_PASSWORD
 
@@ -62,9 +61,9 @@ killContainer $CONTAINER_NAME true
 CMD="sudo docker run --name="${CONTAINER_NAME}" \
                      --net=host \
                      --restart=always \
+                     -e NET_DOMAIN=${NET_DOMAIN} \
                      -e CARTO_DOMAIN=${DOMAIN} \
                      -e CARTO_HOST=${HOST} \
-                     -e CARTO_OFFLINE=${OFFLINE} \
                      -e POSTGRES_ADDRESS=${POSTGRES_ADDRESS} \
                      -e POSTGRES_PASSWORD=${POSTGRES_PASSWORD} \
 	             -it \

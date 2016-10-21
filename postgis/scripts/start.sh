@@ -54,6 +54,9 @@ until `nc -z 127.0.0.1 5432`; do
     sleep 1
 done
 
+#Set password
+su - postgres  -c "psql -U $POSTGRES_USER -d postgres -c \"alter user postgres with password '$POSTGRES_PASS';\""
+
 # Create database
 #if [ "$POSTGRES_DATABASE" ]; then
 #    IS_DATABASE_EXIST=$(psql -lqt -U postgres -h localhost | cut -d \| -f 1 | grep -w $POSTGRES_DATABASE)

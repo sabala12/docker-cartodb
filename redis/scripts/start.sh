@@ -1,5 +1,3 @@
 #!/bin/bash
 
-service redis start
-
-redis-server
+service redis-server start

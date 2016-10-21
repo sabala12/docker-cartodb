@@ -1,11 +1,15 @@
 production:
   host: "${POSTGRES_ADDRESS}"
+  password: "${POSTGRES_PASSWORD}"
 
 staging:
   host: "${POSTGRES_ADDRESS}"
+  password: "${POSTGRES_PASSWORD}"
 
 development:
   host: "${POSTGRES_ADDRESS}"
+  password: "${POSTGRES_PASSWORD}"
 
 test:
   host: "${POSTGRES_ADDRESS}"
+  password: "${POSTGRES_PASSWORD}"

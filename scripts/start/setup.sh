@@ -8,6 +8,7 @@ container_name="setup"
 entry="$WORKING_DIR/../../setup/run-container.sh"
 
 sudo $entry -n $container_name \
+            -c $net_domain \
             -d $carto_domain \
             -u $carto_user \
             -p $carto_password \

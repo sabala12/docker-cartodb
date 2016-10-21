@@ -64,10 +64,11 @@ killContainer()
         fi
 
         if [[ "$__kill_container" == "y" ]]; then
-                if [[ "$__container_status" == "running" ]]; then
-                        stopContainer $__container_name
-                fi 
+                sudo docker rm -f $__container_name
+                #if [[ "$__container_status" == "running" ]]; then
+                #        stopContainer $__container_name
+                #fi 
 
-                rmContainer $__container_name
+                #rmContainer $__container_name
         fi
 }

@@ -2,24 +2,24 @@
 
 source /usr/local/lib/utils.sh
 
-checkOption "CARTO_DOMAIN"
-checkOption "CARTO_HOST"
-checkOption "CARTO_OFFLINE"
-checkOption "POSTGRES_ADDRESS"
-checkOption "POSTGRES_PASSWORD"
+checkOption NET_DOMAIN
+checkOption CARTO_DOMAIN
+checkOption CARTO_HOST
+checkOption POSTGRES_ADDRESS
+checkOption POSTGRES_PASSWORD
 
-if [[ "$CARTO_OFFLINE" == "true" ]]; then
-        setOfflineConfig
-fi
+# Edit config files
+editConfigs
 
-setPostgresConfig
-
+# Start Windshaft
 cd /Windshaft-cartodb
-node app.js ${CARTO_DOMAIN} &> /dev/null &
+forever start app.js ${CARTO_DOMAIN} &> /dev/null &
 
+# Start Sql-Api
 cd /CartoDB-SQL-API
-node app.js ${CARTO_DOMAIN} &> /dev/null &
+forever start app.js ${CARTO_DOMAIN} &> /dev/null &
 
+# Start Carto
 cd /cartodb20
 RAILS_ENV=${CARTO_DOMAIN} bundle exec script/resque > resque.log &
 
