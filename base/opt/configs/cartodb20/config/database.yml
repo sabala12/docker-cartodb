@@ -1,0 +1,11 @@
+production:
+  host: "${POSTGRES_ADDRESS}"
+
+staging:
+  host: "${POSTGRES_ADDRESS}"
+
+development:
+  host: "${POSTGRES_ADDRESS}"
+
+test:
+  host: "${POSTGRES_ADDRESS}"

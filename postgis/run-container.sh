@@ -1,6 +1,7 @@
 #!/bin/bash
 
 WORKING_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+VOLUME_CONFS="-v $WORKING_DIR/opt:/home/opt"
 source $WORKING_DIR/../scripts/utils/general.sh
 source $WORKING_DIR/../scripts/utils/docker.sh
 
@@ -23,6 +24,12 @@ EOF
 
 validateAndExit()
 {
+
+    if [[ ! $(command -v psql) ]]; then
+            echo "psql does not exist!"
+            exit 2;
+    fi
+
     sql_test="select case when true then 'true' end;"
     sql_result=$(psql -U $PGUSER -h "localhost" -c "$sql_test" 2> /dev/null)
     
@@ -142,6 +149,7 @@ waitForContainer &
 sleep 1
 
 CMD="sudo docker run --name="${CONTAINER_NAME}" \
+                     ${VOLUME_CONFS} \
                      ${VOLUME_OPTION} \
                      --restart=always \
                      --net=host \
@@ -149,7 +157,7 @@ CMD="sudo docker run --name="${CONTAINER_NAME}" \
                      -e POSTGRES_PASS=${PGPASSWORD} \
                      -e POSTGRES_DATABASE=${DATABASE} \
                      -it \
-                     carto:postgis"
+                     carto:postgis /home/opt/start.sh"
 
 echo "********************"
 echo "      postgis       "

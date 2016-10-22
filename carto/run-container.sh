@@ -1,6 +1,8 @@
 #!/bin/bash
 
 WORKING_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+VOLUME_BASE_CONFS="-v $WORKING_DIR/../base/opt:/home/opt/base"
+VOLUME_CONFS="-v $WORKING_DIR/opt:/home/opt"
 source $WORKING_DIR/../scripts/utils/general.sh
 source $WORKING_DIR/../scripts/utils/docker.sh
 
@@ -59,6 +61,8 @@ checkOption POSTGRES_PASSWORD
 killContainer $CONTAINER_NAME true
 
 CMD="sudo docker run --name="${CONTAINER_NAME}" \
+                     ${VOLUME_BASE_CONFS} \
+                     ${VOLUME_CONFS} \
                      --net=host \
                      --restart=always \
                      -e NET_DOMAIN=${NET_DOMAIN} \
@@ -67,7 +71,7 @@ CMD="sudo docker run --name="${CONTAINER_NAME}" \
                      -e POSTGRES_ADDRESS=${POSTGRES_ADDRESS} \
                      -e POSTGRES_PASSWORD=${POSTGRES_PASSWORD} \
 	             -it \
-	             carto:carto"
+	             carto:base /home/opt/start.sh"
 
 echo "********************"
 echo "       carto        "

@@ -13,3 +13,5 @@ postgres_user="postgres"
 postgres_password="277336"
 postgres_storage="/data/postgis"
 postgres_database="carto_db_development"
+
+redis_storage="/data/redis"
