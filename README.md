@@ -18,10 +18,6 @@ cd docker-cartodb/postgis/ && ./build.sh
 
 cd docker-cartodb/base/ && ./build.sh
 
-cd docker-cartodb/setup/ && ./build.sh
-
-cd docker-cartodb/carto/ && ./build.sh
-
 cd docker-cartodb/scripts/  
 ./setup.sh  
 ./deploy.sh
