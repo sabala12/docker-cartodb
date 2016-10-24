@@ -18,7 +18,7 @@ OPTIONS:
    -n      container name
    -c      network domain
    -d      carto domain
-   -e      host machine name
+   -e      carto host machine
    -a      postgres address
    -b      postgres password
 EOF

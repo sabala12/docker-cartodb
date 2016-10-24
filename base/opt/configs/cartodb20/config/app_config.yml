@@ -1,0 +1,9 @@
+#defaults:
+#  http_port: 80
+#
+#development:
+#  session_domain: '.localhost.lan'
+#  subdomain_urls: false
+#  http_port: 80
+#  org_metadata_api:
+#    port: 80

@@ -2,7 +2,7 @@
 
 net_domain="network" # Ignore this val
 
-carto_host="$(hostname)"
+carto_host="localhost"
 carto_domain="development"
 carto_user="development"
 carto_password="277336"

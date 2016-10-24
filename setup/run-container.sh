@@ -20,7 +20,7 @@ OPTIONS:
    -u      carto user name
    -p      carto password
    -d      carto domain
-   -e      mail address
+   -e      mail
    -a      postgres address
    -b      postgres password
 EOF

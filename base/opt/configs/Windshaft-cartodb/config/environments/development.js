@@ -1,5 +1,6 @@
 var config = {
-    postgres: {
+    host: '0.0.0.0'
+    ,postgres: {
         host: '${POSTGRES_ADDRESS}',
     }
 };
